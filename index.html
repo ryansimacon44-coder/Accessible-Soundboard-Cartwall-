@@ -43,6 +43,7 @@ h2{margin:0}
 #panel-help dl.keys{grid-template-columns:minmax(0,40%) minmax(0,1fr);align-items:start}
 #panel-help dl.keys dt{align-self:start;overflow-wrap:anywhere;font-family:var(--font);font-size:.92rem}
 #panel-help dl.keys dd{align-self:start}
+#panel-help .helpdoc{outline-offset:6px}
 h4{font-size:.95rem;margin:0 0 8px;font-weight:600;color:var(--ink)}
 #panel-help ol,#panel-help p{max-width:70ch}
 #panel-help li{margin-bottom:4px}
@@ -132,8 +133,6 @@ fieldset.group legend{font-weight:600;padding:0 6px;color:var(--muted);font-size
 dl.keys{display:grid;grid-template-columns:auto 1fr;gap:8px 16px;margin:0}
 dl.keys dt{font-family:var(--mono);font-weight:500;background:var(--panel2);border:1px solid var(--line);border-radius:6px;padding:1px 10px;justify-self:start}
 dl.keys dd{margin:0;align-self:center}
-ol.log{margin:0;padding-left:1.4em;color:var(--muted);font-size:.93rem;max-height:220px;overflow:auto}
-ol.log li{margin-bottom:2px}
 @media (max-width:520px){.np-title{font-size:1.4rem}.tab{padding:8px 12px}}
 .pads{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px}
 .pad{display:flex;flex-direction:column;align-items:flex-start;justify-content:center;gap:2px;min-height:64px;padding:10px 14px;text-align:left}
@@ -211,7 +210,16 @@ main{display:flex;flex-direction:column}
         </div>
         <div class="bar" aria-hidden="true"><div id="prog"></div></div>
         <button id="playerBtn" type="button" class="primary" aria-label="Player">Player</button>
-        <p class="hint" style="margin:0">On the Player button: P play or stop, Shift+P previous, N next, R repeat, S shuffle.</p>
+        <p class="hint" style="margin:0">On the Player button: P play or stop, Shift+P previous, N next, R repeat options, S shuffle.</p>
+        <div id="repMenu" class="edit" role="group" aria-labelledby="rm-h" hidden>
+          <h3 id="rm-h">Repeat</h3>
+          <div class="row">
+            <button type="button" id="rpOff" data-v="off">Off</button>
+            <button type="button" id="rpAll" data-v="all">Whole playlist</button>
+            <button type="button" id="rpOne" data-v="one">Current track</button>
+            <button type="button" id="rpCancel">Cancel</button>
+          </div>
+        </div>
       </div>
 
       <div class="row more" role="group" aria-label="Playlist tools">
@@ -269,22 +277,20 @@ main{display:flex;flex-direction:column}
           <div class="field inline"><input type="checkbox" id="hduck"><label for="hduck">Lower the music while a hotkey sound plays</label></div>
         </fieldset>
         <fieldset class="group">
-          <legend>Playback</legend>
-          <div class="field"><label for="rep">Repeat</label>
-            <select id="rep"><option value="off">Off</option><option value="all">Whole playlist</option><option value="one">Current track</option></select></div>
-          <div class="field inline"><input type="checkbox" id="shuf"><label for="shuf">Shuffle</label></div>
+          <legend>Announcer</legend>
           <div class="field inline"><input type="checkbox" id="voice"><label for="voice">Voice announcer says each track title on air</label></div>
-          <div class="field inline"><input type="checkbox" id="hourly"><label for="hourly">Announce the time at the top of every hour</label></div>
         </fieldset>
         <fieldset class="group">
           <legend>Keyboard</legend>
-          <div class="field inline"><input type="checkbox" id="appmode"><label for="appmode">Hotkey mode: every key reaches the console, even with NVDA or JAWS. F2 toggles it. Turns off heading navigation.</label></div>
+          <div class="field inline"><input type="checkbox" id="hotany"><label for="hotany">Hotkey sounds play anywhere in the app. Off: they play only on the Play sounds button. They never play on the Player button or the Assign or customize button.</label></div>
+          <div class="field inline"><input type="checkbox" id="appmode"><label for="appmode">Hotkey mode: every key reaches the console, even with NVDA or JAWS. F2 toggles it. Turns off heading navigation, except in Help.</label></div>
         </fieldset>
       </div>
     </section>
 
     <section class="panel" role="tabpanel" id="panel-help" aria-labelledby="tab-help" hidden>
       <h2 class="sr-only">Help</h2>
+      <div class="helpdoc" role="document" tabindex="0" aria-label="Help text. Use the reading cursor.">
       <p class="hint" style="margin-top:0">This help explains each section in order: its layout from top to bottom (the order you reach things with Tab), its buttons, and its commands. Hotkey mode is on by default, so single keys reach the console instead of NVDA or JAWS. If a key does not respond, press F2 twice, or press NVDA+Space for focus mode. The buttons work in any mode.</p>
 
       <h3>1. Playlist</h3>
@@ -322,7 +328,7 @@ main{display:flex;flex-direction:column}
             <dt>P</dt><dd>Play, press again to stop</dd>
             <dt>Shift+P</dt><dd>Previous track</dd>
             <dt>N</dt><dd>Next track</dd>
-            <dt>R</dt><dd>Repeat: off, playlist, track</dd>
+            <dt>R</dt><dd>Repeat options: Off, Whole playlist, Current track. Choose with Left or Right Ctrl, then Enter. Escape cancels.</dd>
             <dt>S</dt><dd>Shuffle on or off</dd>
             <dt>M</dt><dd>Mute</dd>
             <dt>+ and -</dt><dd>Volume up or down</dd>
@@ -378,10 +384,10 @@ main{display:flex;flex-direction:column}
           </dl>
         </div>
       </div>
-      <p class="hint">Sounds are saved in this app and stay after you close it. The keys play only while you are on the Play sounds button.</p>
+      <p class="hint">Sounds are saved in this app and stay after you close it. By default the keys play only while you are on the Play sounds button. In Settings you can turn on Hotkey sounds play anywhere, but the keys still never play on the Player button or the Assign or customize button.</p>
 
       <h3 style="margin-top:28px">3. Settings</h3>
-      <p>Choices that stay the same until you change them. Layout from top to bottom, in three groups:</p>
+      <p>Choices that stay the same until you change them. Layout from top to bottom, in three groups: Sound, Announcer and Keyboard. Repeat is not here. Press R on the Player button.</p>
       <div class="cols2">
         <div>
           <h4>Sound</h4>
@@ -393,28 +399,25 @@ main{display:flex;flex-direction:column}
           </dl>
         </div>
         <div>
-          <h4>Playback</h4>
+          <h4>Announcer</h4>
           <dl class="keys">
-            <dt>Repeat</dt><dd>Off, whole playlist, or current track</dd>
-            <dt>Shuffle</dt><dd>Random order</dd>
             <dt>Voice announcer</dt><dd>Says each track title on air</dd>
-            <dt>Announce the time</dt><dd>Says the time at the top of every hour</dd>
           </dl>
         </div>
         <div>
           <h4>Keyboard</h4>
           <dl class="keys">
-            <dt>Hotkey mode</dt><dd>Every key reaches the console, even with NVDA or JAWS. F2 toggles it. It turns off heading navigation.</dd>
+            <dt>Hotkey sounds play anywhere</dt><dd>Off by default. When on, an assigned key plays its sound from anywhere in the app, except on the Player button and the Assign or customize button.</dd>
+            <dt>Hotkey mode</dt><dd>Every key reaches the console, even with NVDA or JAWS. F2 toggles it. It turns off heading navigation, except in Help.</dd>
           </dl>
         </div>
       </div>
 
       <h3 style="margin-top:28px">4. Help</h3>
-      <p>This section. Layout from top to bottom:</p>
+      <p>This section. It is plain text that you read with the reading cursor. Tab moves into it. Layout from top to bottom:</p>
       <ol>
         <li><strong>The explanation of each section</strong>, starting with Playlist.</li>
         <li><strong>Keys that work everywhere.</strong></li>
-        <li><strong>Message history.</strong> The latest messages the console has said, newest first, so you can read one again.</li>
       </ol>
 
       <h3 style="margin-top:28px">Keys that work everywhere</h3>
@@ -424,8 +427,7 @@ main{display:flex;flex-direction:column}
         <dt>F2</dt><dd>Hotkey mode on or off</dd>
         <dt>Ctrl+Shift+U</dt><dd>Check for updates. The desktop app also checks by itself when it opens.</dd>
       </dl>
-      <h3 style="margin-top:24px">Message history</h3>
-      <ol class="log" id="log" reversed></ol>
+      </div>
     </section>
   </main>
 </div>
@@ -441,7 +443,7 @@ main{display:flex;flex-direction:column}
   var plN=3,V=0,mode='list',mv=-1,mvSel=0,menuAt=0,moveAt=0;
   var S={cur:-1,pi:0,playing:false,volume:store.get('vol',80),muted:false,
     shuffle:store.get('shuf',false),repeat:store.get('rep','off'),xf:store.get('xf',3),
-    voice:store.get('voice',false),hourly:store.get('hourly',false),
+    voice:store.get('voice',false),hotany:store.get('hotany',false),
     active:0,duck:1,hotDuck:1,hduck:store.get('hduck',true),app:store.get('app',true)};
   function P(){return pls[V]}
   function pick(id){
@@ -469,10 +471,6 @@ main{display:flex;flex-direction:column}
   function status(msg){
     var l=$('live');l.textContent='';
     setTimeout(function(){l.textContent=msg},40);
-    var li=document.createElement('li');var d=new Date();
-    li.textContent='['+pad(d.getHours())+':'+pad(d.getMinutes())+':'+pad(d.getSeconds())+'] '+msg;
-    var log=$('log');log.insertBefore(li,log.firstChild);
-    while(log.children.length>30)log.removeChild(log.lastChild);
   }
   window.rcAnnounce=function(m){status(m)};
   function speak(text){
@@ -485,14 +483,7 @@ main{display:flex;flex-direction:column}
       speechSynthesis.speak(u);
     }catch(e){}
   }
-  function timeText(){var d=new Date();return d.toLocaleTimeString([], {hour:'numeric',minute:'2-digit'})}
-  function announceTime(speakIt){
-    var d=new Date();
-    var t='The time is '+timeText()+'. '+d.toLocaleDateString([], {weekday:'long',month:'long',day:'numeric'})+'.';
-    status(t);if(speakIt)speak(t);
-  }
 
-  
   /* ---------- playlists ---------- */
   function updatePlTabs(){
     var bs=$('pltabs').children;
@@ -754,9 +745,9 @@ main{display:flex;flex-direction:column}
     store.set('vol',S.volume);if(!quiet)status('Volume '+S.volume+' percent.');
   }
   function setMute(m){S.muted=m;$('mute').checked=m;status(m?'Muted.':'Sound on.')}
-  function setShuffle(v){S.shuffle=v;$('shuf').checked=v;store.set('shuf',v);status('Shuffle '+(v?'on':'off')+'.');refresh()}
+  function setShuffle(v){S.shuffle=v;store.set('shuf',v);status('Shuffle '+(v?'on':'off')+'.');refresh()}
   function setRepeat(v){
-    S.repeat=v;$('rep').value=v;store.set('rep',v);
+    S.repeat=v;store.set('rep',v);
     status('Repeat '+({off:'off',all:'whole playlist',one:'current track'}[v])+'.');refresh();
   }
   function setXf(v,quiet){
@@ -811,19 +802,13 @@ main{display:flex;flex-direction:column}
     }
     updateTime();
   }
-  var lastKey='';
   function clockTick(){
-    var d=new Date(),key=pad(d.getHours())+':'+pad(d.getMinutes());
-    $('clock').textContent=key+':'+pad(d.getSeconds());
-    if(key===lastKey)return;
-    var first=lastKey==='';lastKey=key;
-    if(first)return;
-    if(S.hourly&&d.getMinutes()===0)announceTime(true);
+    var d=new Date();
+    $('clock').textContent=pad(d.getHours())+':'+pad(d.getMinutes())+':'+pad(d.getSeconds());
   }
 
   /* ---------- hotkey sounds ---------- */
   var hot={},hotPlaying={};
-  var KEYNAMES={p:'Play or stop',n:'Next',r:'Repeat',s:'Shuffle',m:'Mute',i:'Read status'};
   function openDb(){
     return new Promise(function(res,rej){
       try{
@@ -861,7 +846,7 @@ main{display:flex;flex-direction:column}
   function endHot(k,p){
     if(hotPlaying[k]!==p)return;
     try{p.a.pause()}catch(e){}
-    delete hotPlaying[k];updateDuck();updatePads();
+    delete hotPlaying[k];updateDuck();
     if(p.solo&&!Object.keys(hotPlaying).some(function(o){return hotPlaying[o].solo}))soloDone();
   }
   function stopHot(k,fade){
@@ -892,7 +877,7 @@ main{display:flex;flex-direction:column}
         else stopAll();
       }
     }
-    hotPlaying[k]=p;updateDuck();updatePads();a.volume=hotVol(p);
+    hotPlaying[k]=p;updateDuck();a.volume=hotVol(p);
     a.playbackRate=h.rate||1;
     a.onended=function(){endHot(k,p)};
     var q=a.play();
@@ -931,20 +916,6 @@ main{display:flex;flex-direction:column}
     if(editing===k){$('hotEdit').hidden=true;editing=null}
     status('Key '+k.toUpperCase()+' cleared.');
     dbDo('readwrite',function(st){return st.delete(k)}).catch(function(){});
-  }
-  function updatePads(){
-    var n=Object.keys(hotPlaying).length;
-    $('hotPlay').setAttribute('aria-pressed',n?'true':'false');
-  }
-  function buildKeySelect(){return;
-    var s=$('hKey'),keys='abcdefghijklmnopqrstuvwxyz0123456789'.split('');
-    var v=s.value;s.textContent='';
-    keys.forEach(function(k){
-      var o=document.createElement('option');o.value=k;
-      o.textContent=k.toUpperCase()+(KEYNAMES[k]?' (normally '+KEYNAMES[k]+')':'')+(hot[k]?' - assigned':'');
-      s.appendChild(o);
-    });
-    s.value=v||'j';
   }
   function renderHot(){
     var ks=Object.keys(hot).sort();
@@ -1130,7 +1101,7 @@ main{display:flex;flex-direction:column}
     if(e.repeat&&lk.length===1&&'pnrsmi'.indexOf(lk)>=0){e.preventDefault();return}
     if(lk==='p'){if(e.shiftKey)prev();else playToggle()}
     else if(lk==='n')next();
-    else if(lk==='r')setRepeat({off:'all',all:'one',one:'off'}[S.repeat]);
+    else if(lk==='r')openRepeat();
     else if(lk==='s')setShuffle(!S.shuffle);
     else if(lk==='m')setMute(!S.muted);
     else if(lk==='i')info();
@@ -1142,13 +1113,40 @@ main{display:flex;flex-direction:column}
     if(h)e.preventDefault();
   });
 
+  /* repeat options: opened with R on the Player button */
+  var RPB=['rpOff','rpAll','rpOne','rpCancel'];
+  function closeRepeat(back){
+    if($('repMenu').hidden)return;
+    $('repMenu').hidden=true;
+    if(back)$('playerBtn').focus();
+  }
+  function openRepeat(){
+    $('repMenu').hidden=false;
+    ['off','all','one'].forEach(function(v,i){$(RPB[i]).setAttribute('aria-pressed',S.repeat===v?'true':'false')});
+    $({off:'rpOff',all:'rpAll',one:'rpOne'}[S.repeat]).focus();
+  }
+  ['rpOff','rpAll','rpOne'].forEach(function(id){
+    $(id).addEventListener('click',function(){setRepeat($(id).dataset.v);closeRepeat(true)});
+  });
+  $('rpCancel').addEventListener('click',function(){closeRepeat(true);status('Repeat not changed.')});
+  $('repMenu').addEventListener('keydown',function(e){
+    if(e.key==='Escape'){e.preventDefault();e.stopPropagation();closeRepeat(true);status('Repeat not changed.');return}
+    var i=RPB.map($).indexOf(document.activeElement),d=0;
+    if(e.code==='ControlRight'){if(e.repeat)return;d=1}
+    else if(e.code==='ControlLeft'){if(e.repeat)return;d=-1}
+    else if(!e.ctrlKey&&(e.key==='ArrowRight'||e.key==='ArrowDown'))d=1;
+    else if(!e.ctrlKey&&(e.key==='ArrowLeft'||e.key==='ArrowUp'))d=-1;
+    if(d&&i>=0){e.preventDefault();$(RPB[(i+d+RPB.length)%RPB.length]).focus()}
+  });
+  $('repMenu').addEventListener('focusout',function(){
+    setTimeout(function(){if(!$('repMenu').hidden&&!$('repMenu').contains(document.activeElement))$('repMenu').hidden=true},0);
+  });
+
   $('vol').addEventListener('input',function(e){setVol(+e.target.value)});
   $('xf').addEventListener('input',function(e){setXf(e.target.value)});
-  $('rep').addEventListener('change',function(e){setRepeat(e.target.value)});
-  $('shuf').addEventListener('change',function(e){setShuffle(e.target.checked)});
   $('mute').addEventListener('change',function(e){setMute(e.target.checked)});
   $('voice').addEventListener('change',function(e){S.voice=e.target.checked;store.set('voice',S.voice);status('Voice announcer '+(S.voice?'on':'off')+'.')});
-  $('hourly').addEventListener('change',function(e){S.hourly=e.target.checked;store.set('hourly',S.hourly);status('Hourly time announcement '+(S.hourly?'on':'off')+'.')});
+  $('hotany').addEventListener('change',function(e){S.hotany=e.target.checked;store.set('hotany',S.hotany);status(S.hotany?'Hotkey sounds now play anywhere, except on the Player button and the Assign or customize button.':'Hotkey sounds now play only on the Play sounds button.')});
 
   document.addEventListener('keydown',function(e){
     if(e.key==='F2'&&!e.ctrlKey&&!e.altKey&&!e.metaKey){e.preventDefault();setAppMode(!S.app);return}
@@ -1162,9 +1160,10 @@ main{display:flex;flex-direction:column}
     if(tag==='INPUT'&&type!=='checkbox'&&type!=='range'&&type!=='file')return;
     if(type==='range'&&(e.key==='ArrowLeft'||e.key==='ArrowRight'))return;
     var k=e.key;
-    if(k.length===1&&t.id==='hotPlay'){
+    var hotOk=t.id==='hotPlay'||(S.hotany&&t.id!=='playerBtn'&&t.id!=='assignKey'&&!(t.closest&&t.closest('#repMenu')));
+    if(k.length===1&&hotOk){
       var lk=k.toLowerCase();e.preventDefault();
-      if(!hot[lk]){if(!e.repeat&&/[a-z0-9]/.test(lk))status('Key '+lk.toUpperCase()+' has no sound. Use Assign or customize first.');return}
+      if(!hot[lk]){if(t.id==='hotPlay'&&!e.repeat&&/[a-z0-9]/.test(lk))status('Key '+lk.toUpperCase()+' has no sound. Use Assign or customize first.');return}
       if(e.repeat)return;
       held[lk]={adj:false,started:false};
       if(!hotPlaying[lk]){playHot(lk);held[lk].started=true}
@@ -1226,7 +1225,7 @@ main{display:flex;flex-direction:column}
 
   /* ---------- init ---------- */
   setVol(S.volume,true);setXf(S.xf,true);
-  $('rep').value=S.repeat;$('shuf').checked=S.shuffle;$('voice').checked=S.voice;$('hourly').checked=S.hourly;
+  $('voice').checked=S.voice;$('hotany').checked=S.hotany;
   $('hduck').checked=S.hduck;setAppMode(S.app,true);
   renderPlTabs();renderList();renderHot();refresh();clockTick();loadHot();
   setInterval(tick,100);setInterval(clockTick,1000);
