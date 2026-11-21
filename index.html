@@ -40,6 +40,12 @@ body{background:var(--bg);color:var(--ink);font-family:var(--font);font-size:17p
 :focus-visible{outline:3px solid var(--focus);outline-offset:2px}
 h1{font-size:1.35rem;margin:0;font-weight:600;letter-spacing:-.01em}
 h2{margin:0}
+#panel-help dl.keys{grid-template-columns:minmax(0,40%) minmax(0,1fr);align-items:start}
+#panel-help dl.keys dt{align-self:start;overflow-wrap:anywhere;font-family:var(--font);font-size:.92rem}
+#panel-help dl.keys dd{align-self:start}
+h4{font-size:.95rem;margin:0 0 8px;font-weight:600;color:var(--ink)}
+#panel-help ol,#panel-help p{max-width:70ch}
+#panel-help li{margin-bottom:4px}
 h3{font-size:.85rem;margin:0 0 10px;font-weight:600;text-transform:uppercase;letter-spacing:.07em;color:var(--muted)}
 p{margin:0}
 header{display:flex;gap:12px;align-items:center;justify-content:space-between}
@@ -218,11 +224,13 @@ main{display:flex;flex-direction:column}
 
     <section class="panel" role="tabpanel" id="panel-hotkeys" aria-labelledby="tab-hotkeys" hidden>
       <h2 class="sr-only">Hotkey sounds</h2>
-      <h3>Assign</h3>
       <div class="row">
-        <button id="assignKey" type="button" class="primary" aria-describedby="assignHelp">Assign: type a letter or number</button>
+        <button id="assignKey" type="button" class="primary" aria-describedby="assignHelp">Assign or customize: type a letter or number</button>
+        <button id="hotPlay" type="button" class="primary" aria-describedby="playHelp">Play sounds: type an assigned key</button>
       </div>
-      <p class="hint" id="assignHelp">Move to this button, then type the letter or number you want. A free key opens the file chooser. A key that already has a sound offers Replace or Customize.</p>
+      <p class="hint" id="assignHelp">Assign or customize: move to this button, then type a letter or number. A free key opens the file chooser. A key that already has a sound offers Replace or Customize.</p>
+      <p class="hint" id="playHelp">Play sounds: move to this button, then type an assigned key to play its sound. Type it again to stop it. This is the only place where the keys play. Escape stops everything.</p>
+      <p class="hint" id="hotSummary">No sounds assigned yet.</p>
 
       <div id="hotOpts" class="edit" role="group" aria-labelledby="ho-h" hidden>
         <h3 id="ho-h"></h3>
@@ -245,17 +253,9 @@ main{display:flex;flex-direction:column}
         </div>
         <div class="field inline"><input type="checkbox" id="heSolo"><label for="heSolo">Play alone: stop the music and all other sounds when this one plays. Off means it plays together with them.</label></div>
         <div class="field inline"><input type="checkbox" id="heResume"><label for="heResume">Resume afterwards: when this sound ends, what was playing continues from where it stopped. Needs Play alone.</label></div>
-        <div class="row"><button id="heTest" type="button">Test sound</button><button id="heDone" type="button" class="primary">Done</button></div>
+        <div class="row"><button id="heTest" type="button">Test sound</button><button id="heRemove" type="button" class="danger">Remove this key</button><button id="heDone" type="button" class="primary">Done</button></div>
       </div>
 
-      <h3 style="margin-top:28px">Play</h3>
-      <p class="hint" id="hotEmpty" style="margin:0 0 12px">No sounds assigned yet. Use Assign below to put a file on a key.</p>
-      <div class="pads" id="pads" role="group" aria-label="Assigned sounds. Press a button to play or stop it."></div>
-      <p class="hint">Hold an assigned key and press Up or Down to change its volume, Left or Right to change its speed, while it plays.</p>
-
-      <h3 style="margin-top:28px">Assigned keys</h3>
-      <ul class="sched" id="hotList" aria-label="Assigned hotkeys" style="margin-top:0"></ul>
-      <p class="hint">Assigned sounds are saved in this browser. An assigned key plays its sound anywhere. On the Player button it replaces the same key. Escape stops everything.</p>
     </section>
 
     <section class="panel" role="tabpanel" id="panel-settings" aria-labelledby="tab-settings" hidden>
@@ -285,25 +285,39 @@ main{display:flex;flex-direction:column}
 
     <section class="panel" role="tabpanel" id="panel-help" aria-labelledby="tab-help" hidden>
       <h2 class="sr-only">Help</h2>
+      <p class="hint" style="margin-top:0">This help explains each section in order: its layout from top to bottom (the order you reach things with Tab), its buttons, and its commands. Hotkey mode is on by default, so single keys reach the console instead of NVDA or JAWS. If a key does not respond, press F2 twice, or press NVDA+Space for focus mode. The buttons work in any mode.</p>
+
+      <h3>1. Playlist</h3>
+      <p>The main section. It has three playlists, which you can use for songs, jingles and ads. Layout from top to bottom:</p>
+      <ol>
+        <li><strong>Playlist tabs.</strong> Playlist 1, 2 and 3, each with its number of files.</li>
+        <li><strong>New on this playlist.</strong> A button that opens the file chooser to add songs, jingles and ads. You can also drop files on the page.</li>
+        <li><strong>Files list.</strong> Appears after you add files. Shows the files of this playlist in order.</li>
+        <li><strong>Now playing.</strong> The status, the title, the next track, the elapsed and the remaining time.</li>
+        <li><strong>Player button.</strong> One button that controls the music with single keys.</li>
+        <li><strong>Playlist tools.</strong> Add a folder, Add playlist, Remove this playlist, Clear this playlist.</li>
+      </ol>
       <div class="cols2">
         <div>
-          <h3>Playlist tabs</h3>
+          <h4>Playlist tabs</h4>
           <dl class="keys">
             <dt>Right Ctrl</dt><dd>Next playlist</dd>
             <dt>Left Ctrl</dt><dd>Previous playlist</dd>
-            <dt>Tab</dt><dd>New on this playlist, then the files, then the Player button, then the tools</dd>
+            <dt>Home, End</dt><dd>First or last playlist</dd>
           </dl>
         </div>
         <div>
-          <h3>Files in a playlist</h3>
+          <h4>Files list</h4>
           <dl class="keys">
-            <dt>Left, Right Ctrl</dt><dd>Previous or next file</dd>
-            <dt>Enter</dt><dd>Open Delete and Adjust position</dd>
-            <dt>Adjust position</dt><dd>Move to the file whose place you want, then Enter. Escape cancels.</dd>
+            <dt>Right Ctrl</dt><dd>Next file</dd>
+            <dt>Left Ctrl</dt><dd>Previous file</dd>
+            <dt>Enter</dt><dd>Open the file menu: Delete, Adjust position, Cancel</dd>
+            <dt>Adjust position</dt><dd>Move to the place you want with Left or Right Ctrl, then Enter. Escape cancels.</dd>
+            <dt>Escape</dt><dd>Close the file menu</dd>
           </dl>
         </div>
         <div>
-          <h3>Player button</h3>
+          <h4>Player button</h4>
           <dl class="keys">
             <dt>P</dt><dd>Play, press again to stop</dd>
             <dt>Shift+P</dt><dd>Previous track</dd>
@@ -313,28 +327,103 @@ main{display:flex;flex-direction:column}
             <dt>M</dt><dd>Mute</dd>
             <dt>+ and -</dt><dd>Volume up or down</dd>
             <dt>Left, Right</dt><dd>Back or forward 10 seconds</dd>
-            <dt>I</dt><dd>Read what is playing, with times</dd>
+            <dt>I</dt><dd>Read what is playing, with the times</dd>
           </dl>
         </div>
         <div>
-          <h3>Console keys</h3>
+          <h4>Playlist tools</h4>
           <dl class="keys">
-            <dt>Esc</dt><dd>Stop the music and all hotkey sounds</dd>
-            <dt>F2</dt><dd>Hotkey mode on or off</dd>
-            <dt>Ctrl+Shift+U</dt><dd>Check for updates (the desktop app also checks by itself when it opens)</dd>
-            <dt>Left, Right on a tab</dt><dd>Switch section</dd>
-          </dl>
-        </div>
-        <div>
-          <h3>Assigned keys</h3>
-          <dl class="keys">
-            <dt>Press the key</dt><dd>Play its sound. Press again to stop it.</dd>
-            <dt>Hold + Up, Down</dt><dd>Volume of that sound, live</dd>
-            <dt>Hold + Left, Right</dt><dd>Speed of that sound, live</dd>
+            <dt>Add a folder</dt><dd>Adds every audio file in a folder</dd>
+            <dt>Add playlist</dt><dd>Makes one more playlist</dd>
+            <dt>Remove this playlist</dt><dd>Removes the playlist you are on</dd>
+            <dt>Clear this playlist</dt><dd>Deletes all its files</dd>
           </dl>
         </div>
       </div>
-      <p class="hint">Hotkey mode is on by default, so single keys reach the console instead of NVDA or JAWS. If a key still does not respond, press NVDA+Space to switch to focus mode, or press F2 twice. The buttons work in any mode.</p>
+
+      <h3 style="margin-top:28px">2. Hotkey sounds</h3>
+      <p>For short sounds you want on a single key, such as a jingle or a sound effect. It has only two buttons. Layout from top to bottom:</p>
+      <ol>
+        <li><strong>Assign or customize.</strong> Puts a sound on a key, and changes it later.</li>
+        <li><strong>Play sounds.</strong> The one place where the keys play their sounds.</li>
+        <li><strong>Assigned keys.</strong> A line of text that lists your keys and their sounds.</li>
+      </ol>
+      <div class="cols2">
+        <div>
+          <h4>Assign or customize</h4>
+          <dl class="keys">
+            <dt>Type a letter or number</dt><dd>A free key opens the file chooser. Pick a file and it is assigned, then the Customize panel opens.</dd>
+            <dt>Key already used</dt><dd>You get Replace, Customize and Cancel.</dd>
+            <dt>Use the selected playlist track</dt><dd>Gives the key the file selected in the playlist instead of a new file.</dd>
+          </dl>
+        </div>
+        <div>
+          <h4>Customize panel</h4>
+          <dl class="keys">
+            <dt>Volume</dt><dd>How loud this sound is</dd>
+            <dt>Speed</dt><dd>Slower or faster, from half to double</dd>
+            <dt>Fade in, Fade out</dt><dd>Seconds to rise or fall</dd>
+            <dt>Play alone</dt><dd>Stops the music and the other sounds while this one plays</dd>
+            <dt>Resume afterwards</dt><dd>The music continues from where it stopped. Needs Play alone.</dd>
+            <dt>Test sound, Remove this key, Done</dt><dd>Try it, clear the key, or save and close</dd>
+          </dl>
+        </div>
+        <div>
+          <h4>Play sounds</h4>
+          <dl class="keys">
+            <dt>Assigned key</dt><dd>Play its sound. Press again to stop it.</dd>
+            <dt>Hold the key + Up, Down</dt><dd>Volume of that sound, live</dd>
+            <dt>Hold the key + Left, Right</dt><dd>Speed of that sound, live</dd>
+            <dt>Escape</dt><dd>Stop everything</dd>
+          </dl>
+        </div>
+      </div>
+      <p class="hint">Sounds are saved in this app and stay after you close it. The keys play only while you are on the Play sounds button.</p>
+
+      <h3 style="margin-top:28px">3. Settings</h3>
+      <p>Choices that stay the same until you change them. Layout from top to bottom, in three groups:</p>
+      <div class="cols2">
+        <div>
+          <h4>Sound</h4>
+          <dl class="keys">
+            <dt>Volume</dt><dd>Master volume. Left and Right arrows change it.</dd>
+            <dt>Crossfade</dt><dd>Seconds where one track fades into the next</dd>
+            <dt>Mute output</dt><dd>Silence everything</dd>
+            <dt>Lower the music</dt><dd>The music gets quieter while a hotkey sound plays</dd>
+          </dl>
+        </div>
+        <div>
+          <h4>Playback</h4>
+          <dl class="keys">
+            <dt>Repeat</dt><dd>Off, whole playlist, or current track</dd>
+            <dt>Shuffle</dt><dd>Random order</dd>
+            <dt>Voice announcer</dt><dd>Says each track title on air</dd>
+            <dt>Announce the time</dt><dd>Says the time at the top of every hour</dd>
+          </dl>
+        </div>
+        <div>
+          <h4>Keyboard</h4>
+          <dl class="keys">
+            <dt>Hotkey mode</dt><dd>Every key reaches the console, even with NVDA or JAWS. F2 toggles it. It turns off heading navigation.</dd>
+          </dl>
+        </div>
+      </div>
+
+      <h3 style="margin-top:28px">4. Help</h3>
+      <p>This section. Layout from top to bottom:</p>
+      <ol>
+        <li><strong>The explanation of each section</strong>, starting with Playlist.</li>
+        <li><strong>Keys that work everywhere.</strong></li>
+        <li><strong>Message history.</strong> The latest messages the console has said, newest first, so you can read one again.</li>
+      </ol>
+
+      <h3 style="margin-top:28px">Keys that work everywhere</h3>
+      <dl class="keys">
+        <dt>Left, Right on a section tab</dt><dd>Switch between Playlist, Hotkey sounds, Settings and Help</dd>
+        <dt>Esc</dt><dd>Stop the music and all hotkey sounds</dd>
+        <dt>F2</dt><dd>Hotkey mode on or off</dd>
+        <dt>Ctrl+Shift+U</dt><dd>Check for updates. The desktop app also checks by itself when it opens.</dd>
+      </dl>
       <h3 style="margin-top:24px">Message history</h3>
       <ol class="log" id="log" reversed></ol>
     </section>
@@ -826,11 +915,10 @@ main{display:flex;flex-direction:column}
     if(hot[k]){stopHot(k);try{URL.revokeObjectURL(hot[k].url)}catch(e){}}
     var o=hot[k];
     hot[k]={key:k,name:name,blob:blob,url:URL.createObjectURL(blob),vol:o?o.vol:100,fin:o?o.fin:0,fout:o?o.fout:0,solo:o?o.solo:false,resume:o?o.resume:false,rate:o?o.rate:1};
-    var note=KEYNAMES[k]?' On the player button, this replaces the '+KEYNAMES[k]+' key.':'';
     renderHot();
     saveHot(k);
     openEdit(k);
-    status('Key '+k.toUpperCase()+' now plays '+name+'.'+note+' Customize it: volume, fade in, fade out and play alone.');
+    status('Key '+k.toUpperCase()+' now plays '+name+'. Customize it: volume, fade in, fade out and play alone.');
   }
   function saveHot(k){
     var h=hot[k];if(!h)return;
@@ -845,8 +933,8 @@ main{display:flex;flex-direction:column}
     dbDo('readwrite',function(st){return st.delete(k)}).catch(function(){});
   }
   function updatePads(){
-    var bs=$('pads').children;
-    for(var i=0;i<bs.length;i++)bs[i].setAttribute('aria-pressed',hotPlaying[bs[i].dataset.key]?'true':'false');
+    var n=Object.keys(hotPlaying).length;
+    $('hotPlay').setAttribute('aria-pressed',n?'true':'false');
   }
   function buildKeySelect(){return;
     var s=$('hKey'),keys='abcdefghijklmnopqrstuvwxyz0123456789'.split('');
@@ -859,36 +947,10 @@ main{display:flex;flex-direction:column}
     s.value=v||'j';
   }
   function renderHot(){
-    var ul=$('hotList');ul.textContent='';
-    Object.keys(hot).sort().forEach(function(k){
-      var h=hot[k],li=document.createElement('li');
-      var sp=document.createElement('span'),tm=document.createElement('span');
-      sp.appendChild(document.createTextNode(h.name));
-      var box=document.createElement('span');box.className='row';
-      var pl=document.createElement('button');pl.type='button';pl.textContent='Play';
-      pl.setAttribute('aria-label','Play or stop the sound on key '+k.toUpperCase()+': '+h.name);
-      pl.addEventListener('click',function(){playHot(k)});
-      var rm=document.createElement('button');rm.type='button';rm.textContent='Remove';
-      rm.setAttribute('aria-label','Clear key '+k.toUpperCase()+': '+h.name);
-      rm.addEventListener('click',function(){removeHot(k);$('assignKey').focus()});
-      var cu=document.createElement('button');cu.type='button';cu.textContent='Customize';
-      cu.setAttribute('aria-label','Customize key '+k.toUpperCase()+': '+h.name+'. Volume '+h.vol+' percent, fade in '+h.fin+', fade out '+h.fout+', play alone '+(h.solo?'on':'off'));
-      cu.addEventListener('click',function(){openEdit(k)});
-      box.appendChild(cu);box.appendChild(rm);
-      li.appendChild(sp);li.appendChild(box);ul.appendChild(li);
-    });
-    $('hotEmpty').hidden=Object.keys(hot).length>0;
-    var pads=$('pads');pads.textContent='';
-    Object.keys(hot).sort().forEach(function(k){
-      var hh=hot[k],b=document.createElement('button');
-      b.type='button';b.className='pad';b.dataset.key=k;
-      b.setAttribute('aria-pressed',hotPlaying[k]?'true':'false');
-      b.setAttribute('aria-label',k.toUpperCase()+': '+hh.name+'. Play or stop');
-            var nm=document.createElement('span');nm.className='nm';nm.textContent=hh.name;
-      b.appendChild(nm);
-      b.addEventListener('click',function(){playHot(k)});
-      pads.appendChild(b);
-    });
+    var ks=Object.keys(hot).sort();
+    $('hotSummary').textContent=ks.length
+      ?('Assigned keys: '+ks.map(function(k){return k.toUpperCase()+', '+hot[k].name}).join('. ')+'.')
+      :'No sounds assigned yet.';
   }
   function loadHot(){
     dbDo('readonly',function(st){return st.getAll()}).then(function(rows){
@@ -911,6 +973,7 @@ main{display:flex;flex-direction:column}
     if(e.ctrlKey||e.altKey||e.metaKey)return;
     if(e.key.length===1&&/[a-z0-9]/i.test(e.key)){e.preventDefault();e.stopPropagation();showOpts(e.key.toLowerCase())}
   });
+  $('hotPlay').onclick=function(){status(Object.keys(hot).length?'Type an assigned key to play or stop its sound.':'No sounds assigned yet. Use Assign or customize first.')};
   $('assignKey').onclick=function(){status('Type the letter or number you want to assign.')};
   $('hoCustom').onclick=function(){if(assignK&&hot[assignK]){$('hotOpts').hidden=true;openEdit(assignK)}};
   $('hoSel').onclick=function(){
@@ -972,10 +1035,11 @@ main{display:flex;flex-direction:column}
     syncEditText();saveHot(editing);
   }
   ['heVol','heRate','heIn','heOut','heSolo','heResume'].forEach(function(id){$(id).addEventListener('input',editChanged);$(id).addEventListener('change',editChanged)});
+  $('heRemove').onclick=function(){var k=editing;if(!k)return;$('hotEdit').hidden=true;editing=null;removeHot(k);$('assignKey').focus()};
   $('heTest').onclick=function(){if(editing)playHot(editing)};
   $('heDone').onclick=function(){
     var k=editing;$('hotEdit').hidden=true;editing=null;renderHot();
-    status('Saved settings for key '+(k||'').toUpperCase()+'.');$('assignKey').focus();
+    status('Saved settings for key '+(k||'').toUpperCase()+'.');$('hotPlay').focus();
   };
 
   function setAppMode(v,quiet){
@@ -1062,7 +1126,6 @@ main{display:flex;flex-direction:column}
   $('playerBtn').addEventListener('keydown',function(e){
     if(e.ctrlKey||e.altKey||e.metaKey)return;
     var k=e.key,lk=k.length===1?k.toLowerCase():k;
-    if(lk.length===1&&hot[lk])return;
     var h=true;
     if(e.repeat&&lk.length===1&&'pnrsmi'.indexOf(lk)>=0){e.preventDefault();return}
     if(lk==='p'){if(e.shiftKey)prev();else playToggle()}
@@ -1099,8 +1162,9 @@ main{display:flex;flex-direction:column}
     if(tag==='INPUT'&&type!=='checkbox'&&type!=='range'&&type!=='file')return;
     if(type==='range'&&(e.key==='ArrowLeft'||e.key==='ArrowRight'))return;
     var k=e.key;
-    if(k.length===1&&hot[k.toLowerCase()]){
+    if(k.length===1&&t.id==='hotPlay'){
       var lk=k.toLowerCase();e.preventDefault();
+      if(!hot[lk]){if(!e.repeat&&/[a-z0-9]/.test(lk))status('Key '+lk.toUpperCase()+' has no sound. Use Assign or customize first.');return}
       if(e.repeat)return;
       held[lk]={adj:false,started:false};
       if(!hotPlaying[lk]){playHot(lk);held[lk].started=true}
