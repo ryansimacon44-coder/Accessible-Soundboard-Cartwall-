@@ -44,6 +44,14 @@ h2{margin:0}
 #panel-help dl.keys dt{align-self:start;overflow-wrap:anywhere;font-family:var(--font);font-size:.92rem}
 #panel-help dl.keys dd{align-self:start}
 #panel-help .helpdoc{outline-offset:6px}
+.micbadge{font-family:var(--mono);font-weight:500;border:1px solid var(--line);border-radius:6px;padding:2px 10px;background:var(--panel2);color:var(--muted)}
+.micbadge.on{border-color:var(--air);color:var(--air)}
+#micToggle[aria-pressed="true"]{background:var(--air);border-color:var(--air);color:#fff}
+.meter{margin:14px 0 18px}
+#panel-mic .groups,.fxbox .groups{margin-top:14px}
+.fxbox{margin-top:18px;border-top:1px solid var(--line);padding-top:14px}
+.fxbox>h3{margin-bottom:10px}
+.field input:disabled{opacity:.45}
 h4{font-size:.95rem;margin:0 0 8px;font-weight:600;color:var(--ink)}
 #panel-help ol,#panel-help p{max-width:70ch}
 #panel-help li{margin-bottom:4px}
@@ -168,6 +176,7 @@ main{display:flex;flex-direction:column}
     <div class="tabs" id="tabs" role="tablist" aria-label="Console sections">
       <button type="button" class="tab" role="tab" id="tab-playlist" aria-controls="panel-playlist" aria-selected="true">Playlist</button>
       <button type="button" class="tab" role="tab" id="tab-hotkeys" aria-controls="panel-hotkeys" aria-selected="false" tabindex="-1">Hotkey sounds</button>
+      <button type="button" class="tab" role="tab" id="tab-mic" aria-controls="panel-mic" aria-selected="false" tabindex="-1">Microphone</button>
       <button type="button" class="tab" role="tab" id="tab-settings" aria-controls="panel-settings" aria-selected="false" tabindex="-1">Settings</button>
       <button type="button" class="tab" role="tab" id="tab-help" aria-controls="panel-help" aria-selected="false" tabindex="-1">Help</button>
     </div>
@@ -261,9 +270,29 @@ main{display:flex;flex-direction:column}
         </div>
         <div class="field inline"><input type="checkbox" id="heSolo"><label for="heSolo">Play alone: stop the music and all other sounds when this one plays. Off means it plays together with them.</label></div>
         <div class="field inline"><input type="checkbox" id="heResume"><label for="heResume">Resume afterwards: when this sound ends, what was playing continues from where it stopped. Needs Play alone.</label></div>
+        <div class="fxbox" id="heFx"><h3>Effects for this sound</h3></div>
         <div class="row"><button id="heTest" type="button">Test sound</button><button id="heRemove" type="button" class="danger">Remove this key</button><button id="heDone" type="button" class="primary">Done</button></div>
       </div>
 
+    </section>
+
+    <section class="panel" role="tabpanel" id="panel-mic" aria-labelledby="tab-mic" hidden>
+      <h2 class="sr-only">Real-Time Microphone and Voice Effects</h2>
+      <div class="row">
+        <button type="button" id="micToggle" class="primary" aria-pressed="false" aria-describedby="micHelp">Live microphone</button>
+        <span class="micbadge" id="micBadge" aria-hidden="true">Off</span>
+      </div>
+      <p class="hint" id="micHelp">Sends your voice live to the speaker output, with the effects below. F3 turns it on or off from anywhere. Use headphones, or keep the microphone away from the speakers, to avoid a loud squeal.</p>
+      <div class="bar meter" aria-hidden="true"><div id="micLevel"></div></div>
+      <div class="groups">
+        <fieldset class="group">
+          <legend>Input</legend>
+          <div class="field"><label for="micDev">Microphone</label><select id="micDev"><option value="">Default microphone</option></select></div>
+          <div class="field"><label for="micVol">Microphone volume</label><input type="range" id="micVol" min="0" max="150" step="5"></div>
+          <div class="field"><label for="micDuck">Music volume while the microphone is live</label><input type="range" id="micDuck" min="10" max="100" step="5"></div>
+        </fieldset>
+      </div>
+      <div class="fxbox" id="micFx"><h3>Voice effects</h3></div>
     </section>
 
     <section class="panel" role="tabpanel" id="panel-settings" aria-labelledby="tab-settings" hidden>
@@ -371,6 +400,7 @@ main{display:flex;flex-direction:column}
             <dt>Fade in, Fade out</dt><dd>Seconds to rise or fall</dd>
             <dt>Play alone</dt><dd>Stops the music and the other sounds while this one plays</dd>
             <dt>Resume afterwards</dt><dd>The music continues from where it stopped. Needs Play alone.</dd>
+            <dt>Effects for this sound</dt><dd>A preset list, then Reverb, Echo / Delay and Filter / EQ, the same as on the Microphone tab. They are saved with the key.</dd>
             <dt>Test sound, Remove this key, Done</dt><dd>Try it, clear the key, or save and close</dd>
           </dl>
         </div>
@@ -384,9 +414,46 @@ main{display:flex;flex-direction:column}
           </dl>
         </div>
       </div>
-      <p class="hint">Sounds are saved in this app and stay after you close it. By default the keys play only while you are on the Play sounds button. In Settings you can turn on Hotkey sounds play anywhere, but the keys still never play on the Player button or the Assign or customize button.</p>
+      <p class="hint">Sounds and their effects are saved in this app and stay after you close it and after updates. By default the keys play only while you are on the Play sounds button. In Settings you can turn on Hotkey sounds play anywhere, but the keys still never play on the Player button or the Assign or customize button.</p>
 
-      <h3 style="margin-top:28px">3. Settings</h3>
+      <h3 style="margin-top:28px">3. Microphone</h3>
+      <p>Real-Time Microphone and Voice Effects, for live narration and live music. Layout from top to bottom:</p>
+      <ol>
+        <li><strong>Live microphone.</strong> A toggle button. When on, your voice goes live to the speaker output. It shows Live or Off.</li>
+        <li><strong>Level meter.</strong> Visual only. It shows how loud the microphone is.</li>
+        <li><strong>Input.</strong> Choose the microphone, set the microphone volume, and set how loud the music stays while the microphone is live.</li>
+        <li><strong>Voice effects.</strong> A preset list, then Reverb, Echo / Delay and Filter / EQ, each with its own on switch.</li>
+      </ol>
+      <div class="cols2">
+        <div>
+          <h4>Live microphone</h4>
+          <dl class="keys">
+            <dt>Enter or Space</dt><dd>Turn the microphone on or off</dd>
+            <dt>F3</dt><dd>Turn the microphone on or off from anywhere</dd>
+            <dt>Mute output</dt><dd>In Settings. It also silences the microphone.</dd>
+          </dl>
+        </div>
+        <div>
+          <h4>Input</h4>
+          <dl class="keys">
+            <dt>Microphone</dt><dd>Which microphone to use. Changing it while live switches at once.</dd>
+            <dt>Microphone volume</dt><dd>0 to 150 percent</dd>
+            <dt>Music volume while live</dt><dd>The music gets quieter while you speak. 100 percent means no change.</dd>
+          </dl>
+        </div>
+        <div>
+          <h4>Voice effects</h4>
+          <dl class="keys">
+            <dt>Preset</dt><dd>No effects, Radio voice, Warm room, Big hall, Slapback echo, Long echo</dd>
+            <dt>Reverb</dt><dd>Amount and room size</dd>
+            <dt>Echo / Delay</dt><dd>Echo time, repeats and amount</dd>
+            <dt>Filter / EQ</dt><dd>Bass, middle, treble, low cut (removes rumble) and high cut (removes hiss)</dd>
+          </dl>
+        </div>
+      </div>
+      <p class="hint">Use headphones, or keep the microphone away from the speakers, to avoid a loud squeal. Effects change while you talk, with no gap. A sliders group is off until you turn its effect on. The microphone turns itself off if it is unplugged. If Windows blocks it, allow desktop apps to use the microphone in Settings, Privacy and security, Microphone.</p>
+
+      <h3 style="margin-top:28px">4. Settings</h3>
       <p>Choices that stay the same until you change them. Layout from top to bottom, in three groups: Sound, Announcer and Keyboard. Repeat is not here. Press R on the Player button.</p>
       <div class="cols2">
         <div>
@@ -413,7 +480,7 @@ main{display:flex;flex-direction:column}
         </div>
       </div>
 
-      <h3 style="margin-top:28px">4. Help</h3>
+      <h3 style="margin-top:28px">5. Help</h3>
       <p>This section. It is plain text that you read with the reading cursor. Tab moves into it. Layout from top to bottom:</p>
       <ol>
         <li><strong>The explanation of each section</strong>, starting with Playlist.</li>
@@ -422,8 +489,9 @@ main{display:flex;flex-direction:column}
 
       <h3 style="margin-top:28px">Keys that work everywhere</h3>
       <dl class="keys">
-        <dt>Left, Right on a section tab</dt><dd>Switch between Playlist, Hotkey sounds, Settings and Help</dd>
+        <dt>Left, Right on a section tab</dt><dd>Switch between Playlist, Hotkey sounds, Microphone, Settings and Help</dd>
         <dt>Esc</dt><dd>Stop the music and all hotkey sounds</dd>
+        <dt>F3</dt><dd>Live microphone on or off</dd>
         <dt>F2</dt><dd>Hotkey mode on or off</dd>
         <dt>Ctrl+Shift+U</dt><dd>Check for updates. The desktop app also checks by itself when it opens.</dd>
       </dl>
@@ -444,7 +512,7 @@ main{display:flex;flex-direction:column}
   var S={cur:-1,pi:0,playing:false,volume:store.get('vol',80),muted:false,
     shuffle:store.get('shuf',false),repeat:store.get('rep','off'),xf:store.get('xf',3),
     voice:store.get('voice',false),hotany:store.get('hotany',false),
-    active:0,duck:1,hotDuck:1,hduck:store.get('hduck',true),app:store.get('app',true)};
+    active:0,duck:1,hotDuck:1,micDuck:1,hduck:store.get('hduck',true),app:store.get('app',true)};
   function P(){return pls[V]}
   function pick(id){
     var el=$(id);
@@ -677,7 +745,7 @@ main{display:flex;flex-direction:column}
   }
 
   /* ---------- playback ---------- */
-  function applyVol(d){d.el.volume=Math.max(0,Math.min(1,(S.muted?0:S.volume/100)*d.level*S.duck*S.hotDuck))}
+  function applyVol(d){d.el.volume=Math.max(0,Math.min(1,(S.muted?0:S.volume/100)*d.level*S.duck*S.hotDuck*S.micDuck))}
   function hardStop(d){try{d.el.pause()}catch(e){}d.level=0;d.target=0;d.stopping=false}
   function nextIdx(auto){
     var n=T().length;if(!n)return null;
@@ -744,7 +812,7 @@ main{display:flex;flex-direction:column}
     $('vol').setAttribute('aria-valuetext',S.volume+' percent');
     store.set('vol',S.volume);if(!quiet)status('Volume '+S.volume+' percent.');
   }
-  function setMute(m){S.muted=m;$('mute').checked=m;status(m?'Muted.':'Sound on.')}
+  function setMute(m){S.muted=m;$('mute').checked=m;if(typeof micApplyGain==='function')micApplyGain();status(m?'Muted.':'Sound on.')}
   function setShuffle(v){S.shuffle=v;store.set('shuf',v);status('Shuffle '+(v?'on':'off')+'.');refresh()}
   function setRepeat(v){
     S.repeat=v;store.set('rep',v);
@@ -807,6 +875,247 @@ main{display:flex;flex-direction:column}
     $('clock').textContent=pad(d.getHours())+':'+pad(d.getMinutes())+':'+pad(d.getSeconds());
   }
 
+
+  /* ---------- audio effects (Web Audio): shared by the microphone and by hotkey sounds ---------- */
+  var AC=null,MASTER=null,irCache={};
+  function audioCtx(){
+    if(!AC){
+      var C=window.AudioContext||window.webkitAudioContext;
+      if(!C)return null;
+      try{AC=new C({latencyHint:'interactive'})}catch(e){AC=null;return null}
+      MASTER=AC.createDynamicsCompressor();
+      MASTER.threshold.value=-3;MASTER.knee.value=0;MASTER.ratio.value=20;MASTER.attack.value=.003;MASTER.release.value=.15;
+      MASTER.connect(AC.destination);
+    }
+    if(AC.state==='suspended'){try{var r=AC.resume();if(r&&r.catch)r.catch(function(){})}catch(e){}}
+    return AC;
+  }
+  function fxNum(v,def,lo,hi){v=+v;return isFinite(v)?Math.max(lo,Math.min(hi,v)):def}
+  function fxClean(o){
+    o=(o&&typeof o==='object')?o:{};
+    var r=o.rv||{},e=o.ec||{},f=o.fl||{};
+    return {
+      rv:{on:!!r.on,mix:fxNum(r.mix,30,0,100),size:fxNum(r.size,2,.5,5)},
+      ec:{on:!!e.on,time:fxNum(e.time,.35,.05,1),fb:fxNum(e.fb,35,0,80),mix:fxNum(e.mix,35,0,100)},
+      fl:{on:!!f.on,bass:fxNum(f.bass,0,-12,12),mid:fxNum(f.mid,0,-12,12),treble:fxNum(f.treble,0,-12,12),low:fxNum(f.low,20,20,500),high:fxNum(f.high,20000,2000,20000)}
+    };
+  }
+  function fxActive(fx){return !!(fx&&(fx.rv.on||fx.ec.on||fx.fl.on))}
+  function fxTail(fx){
+    var t=.3;
+    if(fx.rv.on)t+=fx.rv.size;
+    if(fx.ec.on){var f=fx.ec.fb/100;t+=Math.min(8,fx.ec.time*(f>0?Math.ceil(Math.log(.01)/Math.log(f)):1))}
+    return Math.min(12,t)*1000;
+  }
+  function impulse(ac,sec){
+    var key=sec.toFixed(1);if(irCache[key])return irCache[key];
+    var n=Math.max(1,Math.floor(ac.sampleRate*sec)),b=ac.createBuffer(2,n,ac.sampleRate);
+    for(var c=0;c<2;c++){var d=b.getChannelData(c);for(var i=0;i<n;i++)d[i]=(Math.random()*2-1)*Math.pow(1-i/n,2.5)}
+    irCache[key]=b;return b;
+  }
+  function makeFx(ac,fx){
+    var n={},all=[];
+    function node(x){all.push(x);return x}
+    n.input=node(ac.createGain());n.out=node(ac.createGain());
+    var hp=node(ac.createBiquadFilter()),lp=node(ac.createBiquadFilter()),bs=node(ac.createBiquadFilter()),md=node(ac.createBiquadFilter()),tr=node(ac.createBiquadFilter());
+    hp.type='highpass';hp.Q.value=.707;lp.type='lowpass';lp.Q.value=.707;
+    bs.type='lowshelf';bs.frequency.value=200;md.type='peaking';md.frequency.value=1000;md.Q.value=.9;tr.type='highshelf';tr.frequency.value=4000;
+    n.input.connect(hp);hp.connect(lp);lp.connect(bs);bs.connect(md);md.connect(tr);
+    tr.connect(n.out);
+    var dly=node(ac.createDelay(1.1)),fb=node(ac.createGain()),ew=node(ac.createGain());
+    tr.connect(dly);dly.connect(fb);fb.connect(dly);dly.connect(ew);ew.connect(n.out);
+    var cv=node(ac.createConvolver()),rw=node(ac.createGain()),irSize=0;
+    tr.connect(cv);cv.connect(rw);rw.connect(n.out);
+    function ramp(prm,v){try{prm.setTargetAtTime(v,ac.currentTime,.03)}catch(e){prm.value=v}}
+    n.set=function(f){
+      f=fxClean(f);
+      ramp(hp.frequency,f.fl.on?f.fl.low:10);ramp(lp.frequency,f.fl.on?f.fl.high:20000);
+      ramp(bs.gain,f.fl.on?f.fl.bass:0);ramp(md.gain,f.fl.on?f.fl.mid:0);ramp(tr.gain,f.fl.on?f.fl.treble:0);
+      ramp(dly.delayTime,f.ec.time);ramp(fb.gain,f.ec.on?f.ec.fb/100:0);ramp(ew.gain,f.ec.on?f.ec.mix/100:0);
+      if(f.rv.on&&irSize!==f.rv.size){try{cv.buffer=impulse(ac,f.rv.size);irSize=f.rv.size}catch(e){}}
+      ramp(rw.gain,f.rv.on?f.rv.mix/100:0);
+    };
+    n.destroy=function(){all.forEach(function(x){try{x.disconnect()}catch(e){}})};
+    n.set(fx);
+    return n;
+  }
+  var PRESETS=[
+    ['No effects',{}],
+    ['Radio voice',{fl:{on:true,bass:3,mid:2,treble:4,low:100,high:12000}}],
+    ['Warm room',{rv:{on:true,mix:25,size:1.2},fl:{on:true,bass:2,mid:0,treble:-1,low:20,high:20000}}],
+    ['Big hall',{rv:{on:true,mix:40,size:3.5}}],
+    ['Slapback echo',{ec:{on:true,time:.12,fb:20,mix:35}}],
+    ['Long echo',{ec:{on:true,time:.5,fb:45,mix:40},rv:{on:true,mix:15,size:1.5}}]
+  ];
+  var FXG=[
+    {k:'rv',title:'Reverb',on:'Turn on reverb',f:[['mix','Reverb amount',0,100,5,function(v){return v+' percent'}],['size','Room size',.5,5,.5,function(v){return v+(v===1?' second':' seconds')}]]},
+    {k:'ec',title:'Echo / Delay',on:'Turn on echo',f:[['time','Echo time',.05,1,.05,function(v){return v.toFixed(2)+' seconds'}],['fb','Echo repeats',0,80,5,function(v){return v+' percent'}],['mix','Echo amount',0,100,5,function(v){return v+' percent'}]]},
+    {k:'fl',title:'Filter / EQ',on:'Turn on filter and EQ',f:[
+      ['bass','Bass',-12,12,1,function(v){return v+' decibels'}],['mid','Middle',-12,12,1,function(v){return v+' decibels'}],['treble','Treble',-12,12,1,function(v){return v+' decibels'}],
+      ['low','Low cut: removes rumble',20,500,10,function(v){return v<=20?'Off':v+' hertz'}],['high','High cut: removes hiss',2000,20000,500,function(v){return v>=20000?'Off':v+' hertz'}]]}
+  ];
+  /* builds the effect controls inside host; onChange gets the cleaned settings after every change */
+  function buildFx(host,pre,onChange){
+    var el={},mute=false;
+    var pf=document.createElement('div');pf.className='field';
+    var pl=document.createElement('label');pl.htmlFor=pre+'-preset';pl.textContent='Preset';
+    var ps=document.createElement('select');ps.id=pre+'-preset';
+    var o0=document.createElement('option');o0.value='';o0.textContent='Choose a preset';ps.appendChild(o0);
+    PRESETS.forEach(function(x,i){var o=document.createElement('option');o.value=i;o.textContent=x[0];ps.appendChild(o)});
+    pf.appendChild(pl);pf.appendChild(ps);host.appendChild(pf);
+    var wrap=document.createElement('div');wrap.className='groups';host.appendChild(wrap);
+    FXG.forEach(function(g){
+      var fs=document.createElement('fieldset');fs.className='group';
+      var lg=document.createElement('legend');lg.textContent=g.title;fs.appendChild(lg);
+      var row=document.createElement('div');row.className='field inline';
+      var cb=document.createElement('input');cb.type='checkbox';cb.id=pre+'-'+g.k+'-on';
+      var cl=document.createElement('label');cl.htmlFor=cb.id;cl.textContent=g.on;
+      row.appendChild(cb);row.appendChild(cl);fs.appendChild(row);
+      el[g.k]={on:cb,f:{}};
+      g.f.forEach(function(d){
+        var f=document.createElement('div');f.className='field';
+        var l=document.createElement('label');l.htmlFor=pre+'-'+g.k+'-'+d[0];l.textContent=d[1];
+        var r=document.createElement('input');r.type='range';r.id=l.htmlFor;r.min=d[2];r.max=d[3];r.step=d[4];
+        f.appendChild(l);f.appendChild(r);fs.appendChild(f);
+        el[g.k].f[d[0]]=r;
+        r.addEventListener('input',changed);
+      });
+      cb.addEventListener('change',function(){sync();changed()});
+      wrap.appendChild(fs);
+    });
+    function sync(){
+      FXG.forEach(function(g){
+        var on=el[g.k].on.checked;
+        g.f.forEach(function(d){
+          var r=el[g.k].f[d[0]];r.disabled=!on;
+          r.setAttribute('aria-valuetext',d[5](+r.value));
+        });
+      });
+    }
+    function read(){
+      var o={};
+      FXG.forEach(function(g){o[g.k]={on:el[g.k].on.checked};g.f.forEach(function(d){o[g.k][d[0]]=+el[g.k].f[d[0]].value})});
+      return fxClean(o);
+    }
+    function changed(){
+      if(mute)return;
+      sync();ps.value='';
+      onChange(read());
+    }
+    ps.addEventListener('change',function(){
+      if(ps.value==='')return;
+      var fx=fxClean(PRESETS[+ps.value][1]);
+      api.set(fx);onChange(fx);
+      status('Preset '+PRESETS[+ps.value][0]+'.');
+    });
+    var api={
+      set:function(fx){
+        fx=fxClean(fx);mute=true;
+        FXG.forEach(function(g){el[g.k].on.checked=fx[g.k].on;g.f.forEach(function(d){el[g.k].f[d[0]].value=fx[g.k][d[0]]})});
+        sync();ps.value='';mute=false;
+      },
+      get:read
+    };
+    api.set(null);
+    return api;
+  }
+
+  /* ---------- live microphone ---------- */
+  var MS=(function(){
+    var m=store.get('mic',null)||{};
+    return {fx:fxClean(m.fx),vol:fxNum(m.vol,100,0,150),duck:fxNum(m.duck,30,10,100),dev:typeof m.dev==='string'?m.dev:''};
+  })();
+  function saveMic(){store.set('mic',MS)}
+  var mic={live:false,starting:false,cancel:false,stream:null,src:null,gain:null,fx:null,an:null,timer:0};
+  function micGainValue(){return S.muted?0:MS.vol/100}
+  function micApplyGain(){if(mic.gain){try{mic.gain.gain.setTargetAtTime(micGainValue(),AC.currentTime,.02)}catch(e){mic.gain.gain.value=micGainValue()}}}
+  function micSync(){
+    $('micToggle').setAttribute('aria-pressed',mic.live?'true':'false');
+    var b=$('micBadge');b.textContent=mic.live?'Live':(mic.starting?'Starting':'Off');b.className='micbadge'+(mic.live?' on':'');
+    S.micDuck=mic.live?MS.duck/100:1;
+    if(!mic.live)$('micLevel').style.width='0';
+  }
+  function micError(err){
+    var n=err&&err.name;
+    if(n==='NotAllowedError'||n==='SecurityError')return 'The microphone is blocked. In Windows, open Settings, Privacy and security, Microphone, and allow desktop apps to use it.';
+    if(n==='NotFoundError'||n==='OverconstrainedError')return 'No microphone was found. Check that it is plugged in.';
+    if(n==='NotReadableError'||n==='AbortError')return 'The microphone is busy or not available. Close other apps that use it.';
+    return 'The microphone could not start.';
+  }
+  function micDevices(){
+    if(!navigator.mediaDevices||!navigator.mediaDevices.enumerateDevices)return;
+    navigator.mediaDevices.enumerateDevices().then(function(list){
+      var sel=$('micDev'),cur=MS.dev,n=0;
+      sel.textContent='';
+      var d0=document.createElement('option');d0.value='';d0.textContent='Default microphone';sel.appendChild(d0);
+      list.forEach(function(d){
+        if(d.kind!=='audioinput'||!d.deviceId||d.deviceId==='default'||d.deviceId==='communications')return;
+        n++;var o=document.createElement('option');o.value=d.deviceId;o.textContent=d.label||('Microphone '+n);sel.appendChild(o);
+      });
+      sel.value=cur;if(sel.value!==cur){sel.value='';}
+    }).catch(function(){});
+  }
+  function micStop(msg){
+    if(mic.timer){clearInterval(mic.timer);mic.timer=0}
+    try{if(mic.src)mic.src.disconnect()}catch(e){}
+    try{if(mic.gain)mic.gain.disconnect()}catch(e){}
+    try{if(mic.fx)mic.fx.destroy()}catch(e){}
+    try{if(mic.an)mic.an.disconnect()}catch(e){}
+    if(mic.stream)mic.stream.getTracks().forEach(function(t){t.onended=null;try{t.stop()}catch(e){}});
+    mic.live=false;mic.stream=mic.src=mic.gain=mic.fx=mic.an=null;
+    micSync();if(msg)status(msg);
+  }
+  function micStart(){
+    if(mic.live||mic.starting)return;
+    var ac=audioCtx();
+    if(!ac||!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia){status('The microphone is not available in this app.');return}
+    mic.starting=true;mic.cancel=false;micSync();status('Starting the microphone.');
+    var a={echoCancellation:false,noiseSuppression:false,autoGainControl:false};
+    if(MS.dev)a.deviceId={ideal:MS.dev};
+    navigator.mediaDevices.getUserMedia({audio:a}).then(function(stream){
+      mic.starting=false;
+      if(mic.cancel){stream.getTracks().forEach(function(t){t.stop()});micSync();return}
+      try{
+        mic.stream=stream;mic.src=ac.createMediaStreamSource(stream);
+        mic.gain=ac.createGain();mic.gain.gain.value=micGainValue();
+        mic.fx=makeFx(ac,MS.fx);
+        mic.an=ac.createAnalyser();mic.an.fftSize=512;
+        mic.src.connect(mic.gain);mic.gain.connect(mic.fx.input);mic.fx.out.connect(MASTER);mic.fx.out.connect(mic.an);
+      }catch(e){micStop('The microphone could not start.');return}
+      var tr=stream.getAudioTracks()[0];
+      if(tr)tr.onended=function(){micStop('The microphone was disconnected. Live microphone is off.')};
+      mic.live=true;micSync();micDevices();
+      var buf=new Uint8Array(mic.an.fftSize);
+      mic.timer=setInterval(function(){
+        if(!mic.an||document.hidden)return;
+        mic.an.getByteTimeDomainData(buf);
+        var pk=0;for(var i=0;i<buf.length;i++){var v=Math.abs(buf[i]-128);if(v>pk)pk=v}
+        $('micLevel').style.width=Math.min(100,pk/128*100)+'%';
+      },80);
+      status('Live microphone is on.'+(S.muted?' Output is muted.':'')+' Use headphones to avoid feedback.');
+    }).catch(function(err){mic.starting=false;micSync();status(micError(err))});
+  }
+  function micToggle(){
+    if(mic.starting){mic.cancel=true;mic.starting=false;micSync();status('Cancelled.');return}
+    if(mic.live)micStop('Live microphone is off.');else micStart();
+  }
+  $('micToggle').addEventListener('click',micToggle);
+  $('micVol').addEventListener('input',function(e){MS.vol=+e.target.value;e.target.setAttribute('aria-valuetext',MS.vol+' percent');micApplyGain();saveMic()});
+  $('micDuck').addEventListener('input',function(e){MS.duck=+e.target.value;e.target.setAttribute('aria-valuetext',MS.duck+' percent');if(mic.live)S.micDuck=MS.duck/100;saveMic()});
+  $('micDev').addEventListener('change',function(e){
+    MS.dev=e.target.value;saveMic();
+    if(mic.live){micStop();micStart()}
+  });
+  if(navigator.mediaDevices&&navigator.mediaDevices.addEventListener){navigator.mediaDevices.addEventListener('devicechange',function(){if(mic.live)micDevices()})}
+  var micFxApi=null;
+  function initMic(){
+    $('micVol').value=MS.vol;$('micVol').setAttribute('aria-valuetext',MS.vol+' percent');
+    $('micDuck').value=MS.duck;$('micDuck').setAttribute('aria-valuetext',MS.duck+' percent');
+    micFxApi=buildFx($('micFx'),'mf',function(fx){MS.fx=fx;if(mic.fx)mic.fx.set(fx);saveMic()});
+    micFxApi.set(MS.fx);
+    micSync();
+  }
+
   /* ---------- hotkey sounds ---------- */
   var hot={},hotPlaying={};
   function openDb(){
@@ -828,6 +1137,7 @@ main{display:flex;flex-direction:column}
   }
   function updateDuck(){S.hotDuck=(S.hduck&&Object.keys(hotPlaying).length)?.3:1}
   var soloResume=false,soloHeld=[];
+  function setHotVol(p){var v=hotVol(p);if(p.gain){try{p.gain.gain.value=v}catch(e){}}else p.a.volume=v}
   function hotVol(p){return Math.max(0,Math.min(1,(S.muted?0:S.volume/100)*(p.h.vol/100)*p.level))}
   function resumeMusic(){
     decks.forEach(function(d,k){if(k===S.active||(d.idx>=0&&d.level>0)){var q=d.el.play();if(q&&q.catch)q.catch(function(){})}});
@@ -843,9 +1153,10 @@ main{display:flex;flex-direction:column}
     if(music&&S.cur>=0&&!S.playing)resumeMusic();
     if(music||held.length)status('Resumed what was playing before, from where it stopped.');
   }
-  function endHot(k,p){
+  function endHot(k,p,hard){
     if(hotPlaying[k]!==p)return;
     try{p.a.pause()}catch(e){}
+    if(p.fx){var fxn=p.fx,gn=p.gain,wait=hard?0:fxTail(p.h.fx);p.fx=null;setTimeout(function(){fxn.destroy();try{gn.disconnect()}catch(e){}},wait)}
     delete hotPlaying[k];updateDuck();
     if(p.solo&&!Object.keys(hotPlaying).some(function(o){return hotPlaying[o].solo}))soloDone();
   }
@@ -855,7 +1166,7 @@ main{display:flex;flex-direction:column}
   }
   function stopHotAll(){
     soloResume=false;soloHeld=[];
-    Object.keys(hotPlaying).forEach(function(k){endHot(k,hotPlaying[k])});
+    Object.keys(hotPlaying).forEach(function(k){endHot(k,hotPlaying[k],true)});
   }
   function playHot(k){
     var h=hot[k];if(!h)return;
@@ -877,7 +1188,21 @@ main{display:flex;flex-direction:column}
         else stopAll();
       }
     }
-    hotPlaying[k]=p;updateDuck();a.volume=hotVol(p);
+    if(fxActive(h.fx)){
+      var ac=audioCtx(),src=null;
+      if(ac){
+        try{
+          p.fx=makeFx(ac,h.fx);p.gain=ac.createGain();
+          p.fx.out.connect(p.gain);p.gain.connect(MASTER);
+          src=ac.createMediaElementSource(a);src.connect(p.fx.input);a.volume=1;
+        }catch(e){
+          if(src){try{src.connect(ac.destination)}catch(e2){}}
+          try{if(p.fx)p.fx.destroy()}catch(e3){}
+          p.fx=null;p.gain=null;
+        }
+      }
+    }
+    hotPlaying[k]=p;updateDuck();setHotVol(p);
     a.playbackRate=h.rate||1;
     a.onended=function(){endHot(k,p)};
     var q=a.play();
@@ -892,14 +1217,14 @@ main{display:flex;flex-direction:column}
       if(p.state==='in'){p.level=h.fin>0?Math.min(1,p.level+dt/h.fin):1;if(p.level>=1)p.state='play'}
       if(p.state!=='out'&&h.fout>0&&isFinite(dur)&&dur>h.fin+h.fout&&left<=h.fout)p.state='out';
       if(p.state==='out'){p.level=h.fout>0?Math.max(0,p.level-dt/h.fout):0;if(p.level<=0){endHot(k,p);return}}
-      a.volume=hotVol(p);
+      setHotVol(p);
     });
   },50);
   function assignHot(k,blob,name){
     if(!k||!blob)return;
     if(hot[k]){stopHot(k);try{URL.revokeObjectURL(hot[k].url)}catch(e){}}
     var o=hot[k];
-    hot[k]={key:k,name:name,blob:blob,url:URL.createObjectURL(blob),vol:o?o.vol:100,fin:o?o.fin:0,fout:o?o.fout:0,solo:o?o.solo:false,resume:o?o.resume:false,rate:o?o.rate:1};
+    hot[k]={key:k,name:name,blob:blob,url:URL.createObjectURL(blob),vol:o?o.vol:100,fin:o?o.fin:0,fout:o?o.fout:0,solo:o?o.solo:false,resume:o?o.resume:false,rate:o?o.rate:1,fx:o?o.fx:fxClean(null)};
     renderHot();
     saveHot(k);
     openEdit(k);
@@ -907,7 +1232,7 @@ main{display:flex;flex-direction:column}
   }
   function saveHot(k){
     var h=hot[k];if(!h)return;
-    dbDo('readwrite',function(st){return st.put({key:k,name:h.name,blob:h.blob,vol:h.vol,fin:h.fin,fout:h.fout,solo:h.solo,resume:h.resume,rate:h.rate})}).catch(function(){status('Saved for this visit only. This browser would not keep the file.')});
+    dbDo('readwrite',function(st){return st.put({key:k,name:h.name,blob:h.blob,vol:h.vol,fin:h.fin,fout:h.fout,solo:h.solo,resume:h.resume,rate:h.rate,fx:h.fx})}).catch(function(){status('Saved for this visit only. This browser would not keep the file.')});
   }
   function removeHot(k){
     var h=hot[k];if(!h)return;
@@ -925,7 +1250,7 @@ main{display:flex;flex-direction:column}
   }
   function loadHot(){
     dbDo('readonly',function(st){return st.getAll()}).then(function(rows){
-      (rows||[]).forEach(function(r){hot[r.key]={key:r.key,name:r.name,blob:r.blob,url:URL.createObjectURL(r.blob),vol:r.vol==null?100:r.vol,fin:r.fin||0,fout:r.fout||0,solo:!!r.solo,resume:!!r.resume,rate:r.rate||1}});
+      (rows||[]).forEach(function(r){hot[r.key]={key:r.key,name:r.name,blob:r.blob,url:URL.createObjectURL(r.blob),vol:r.vol==null?100:r.vol,fin:r.fin||0,fout:r.fout||0,solo:!!r.solo,resume:!!r.resume,rate:r.rate||1,fx:fxClean(r.fx)}});
       renderHot();
       var n=Object.keys(hot).length;
       if(n)status('Ready. '+plural(n,'hotkey sound')+' loaded.');
@@ -986,6 +1311,11 @@ main{display:flex;flex-direction:column}
   $('hduck').addEventListener('change',function(e){S.hduck=e.target.checked;store.set('hduck',S.hduck);updateDuck();status('Lower the music for hotkey sounds: '+(S.hduck?'on':'off')+'.')});
 
   var editing=null;
+  var heFxApi=buildFx($('heFx'),'hf',function(fx){
+    var h=hot[editing];if(!h)return;
+    h.fx=fx;var p=hotPlaying[editing];if(p&&p.fx)p.fx.set(fx);
+    scheduleSave(editing);
+  });
   function syncEditText(){
     $('heVol').setAttribute('aria-valuetext',$('heVol').value+' percent');
     $('heResume').disabled=!$('heSolo').checked;
@@ -997,6 +1327,7 @@ main{display:flex;flex-direction:column}
     editing=k;
     $('heKey').textContent=k.toUpperCase()+': '+h.name;
     $('heVol').value=h.vol;$('heIn').value=h.fin;$('heOut').value=h.fout;$('heSolo').checked=!!h.solo;$('heResume').checked=!!h.resume;$('heRate').value=h.rate;
+    heFxApi.set(h.fx);
     syncEditText();$('hotEdit').hidden=false;
     $('heVol').focus();
   }
@@ -1150,6 +1481,7 @@ main{display:flex;flex-direction:column}
 
   document.addEventListener('keydown',function(e){
     if(e.key==='F2'&&!e.ctrlKey&&!e.altKey&&!e.metaKey){e.preventDefault();setAppMode(!S.app);return}
+    if(e.key==='F3'&&!e.ctrlKey&&!e.altKey&&!e.metaKey){e.preventDefault();if(!e.repeat)micToggle();return}
     if(e.ctrlKey||e.altKey||e.metaKey)return;
     var hk=Object.keys(held);
     if(hk.length&&(e.key==='ArrowUp'||e.key==='ArrowDown'||e.key==='ArrowLeft'||e.key==='ArrowRight')){
@@ -1160,7 +1492,7 @@ main{display:flex;flex-direction:column}
     if(tag==='INPUT'&&type!=='checkbox'&&type!=='range'&&type!=='file')return;
     if(type==='range'&&(e.key==='ArrowLeft'||e.key==='ArrowRight'))return;
     var k=e.key;
-    var hotOk=t.id==='hotPlay'||(S.hotany&&t.id!=='playerBtn'&&t.id!=='assignKey'&&!(t.closest&&t.closest('#repMenu')));
+    var hotOk=t.id==='hotPlay'||(S.hotany&&t.id!=='playerBtn'&&t.id!=='assignKey'&&!(t.closest&&t.closest('#repMenu,#hotOpts,#hotEdit')));
     if(k.length===1&&hotOk){
       var lk=k.toLowerCase();e.preventDefault();
       if(!hot[lk]){if(t.id==='hotPlay'&&!e.repeat&&/[a-z0-9]/.test(lk))status('Key '+lk.toUpperCase()+' has no sound. Use Assign or customize first.');return}
@@ -1173,7 +1505,7 @@ main{display:flex;flex-direction:column}
   });
 
   /* ---------- tabs ---------- */
-  var TABS=['playlist','hotkeys','settings','help'];
+  var TABS=['playlist','hotkeys','mic','settings','help'];
   function showTab(id,focusTab){
     TABS.forEach(function(t){
       var on=t===id,b=$('tab-'+t);
@@ -1226,7 +1558,7 @@ main{display:flex;flex-direction:column}
   /* ---------- init ---------- */
   setVol(S.volume,true);setXf(S.xf,true);
   $('voice').checked=S.voice;$('hotany').checked=S.hotany;
-  $('hduck').checked=S.hduck;setAppMode(S.app,true);
+  $('hduck').checked=S.hduck;setAppMode(S.app,true);initMic();
   renderPlTabs();renderList();renderHot();refresh();clockTick();loadHot();
   setInterval(tick,100);setInterval(clockTick,1000);
 })();
