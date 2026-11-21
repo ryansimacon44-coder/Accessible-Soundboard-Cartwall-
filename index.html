@@ -42,6 +42,16 @@ h2{margin:0}
 #panel-help dl.keys dt{align-self:start;overflow-wrap:anywhere;font-family:var(--font);font-size:.92rem}
 #panel-help dl.keys dd{align-self:start}
 #panel-help .helpdoc{outline-offset:6px}
+.guide p,.guide ul{margin:0 0 12px;line-height:1.55}
+.guide ul{padding-left:22px}
+.guide li{margin:0 0 6px}
+.guide h3{margin:26px 0 10px}
+.guide>h3:first-child{margin-top:0}
+body.intro .topbar,body.intro main{display:none}
+#intro{margin:8px 0 24px}
+#intro .helpdoc{outline-offset:6px}
+#intro .go{margin-top:24px;font-size:1.1rem;padding:14px 22px}
+
 .acc{margin-top:16px;display:flex;flex-direction:column;gap:8px}
 .acc-h{margin:0;font-size:1rem;text-transform:none;letter-spacing:0;color:var(--ink)}
 .acc-b{width:100%;min-height:50px;text-align:left;display:flex;justify-content:space-between;align-items:center;gap:12px;font-weight:600}
@@ -188,6 +198,8 @@ main{display:flex;flex-direction:column}
     </div>
     <div class="side" aria-hidden="true"><span class="mini" id="mini">Stopped</span><span class="clock" id="clock">--:--:--</span></div>
   </div>
+
+  <div id="intro" hidden></div>
 
   <div class="status" id="live" role="status" aria-live="polite" aria-atomic="true">Ready. Playlist 1 of 3. Press Tab to reach New on this playlist.</div>
 
@@ -337,223 +349,57 @@ main{display:flex;flex-direction:column}
 
     <section class="panel" role="tabpanel" id="panel-help" aria-labelledby="tab-help" hidden>
       <h2 class="sr-only">Help</h2>
-      <div class="helpdoc" role="document" tabindex="0" aria-label="Help text. Use the reading cursor.">
-      <p class="hint" style="margin-top:0">This help explains each section in order: its layout from top to bottom (the order you reach things with Tab), its buttons, and its commands. Hotkey mode is on by default, so single keys reach the console instead of NVDA or JAWS. If a key does not respond, press F2 twice, or press NVDA+Space for focus mode. The buttons work in any mode.</p>
-
-      <h3>1. Playlist</h3>
-      <p>The main section. It has three playlists, which you can use for songs, jingles and ads. Layout from top to bottom:</p>
-      <ol>
-        <li><strong>Playlist tabs.</strong> Playlist 1, 2 and 3, each with its number of files.</li>
-        <li><strong>New on this playlist.</strong> A button that opens the file chooser to add songs, jingles and ads. You can also drop files on the page.</li>
-        <li><strong>Files list.</strong> Appears after you add files. Shows the files of this playlist in order.</li>
-        <li><strong>Now playing.</strong> The status, the title, the next track, the elapsed and the remaining time.</li>
-        <li><strong>Player button.</strong> One button that controls the music with single keys.</li>
-        <li><strong>Playlist tools.</strong> Add a folder, Add playlist, Remove this playlist, Clear this playlist.</li>
-      </ol>
-      <div class="cols2">
-        <div>
-          <h4>Playlist tabs</h4>
-          <dl class="keys">
-            <dt>Right Ctrl</dt><dd>Next playlist</dd>
-            <dt>Left Ctrl</dt><dd>Previous playlist</dd>
-            <dt>Home, End</dt><dd>First or last playlist</dd>
-          </dl>
-        </div>
-        <div>
-          <h4>Files list</h4>
-          <dl class="keys">
-            <dt>Right Ctrl</dt><dd>Next file</dd>
-            <dt>Left Ctrl</dt><dd>Previous file</dd>
-            <dt>Enter</dt><dd>Open the file menu: Delete, Adjust position, Cancel</dd>
-            <dt>Adjust position</dt><dd>Move to the place you want with Left or Right Ctrl, then Enter. Escape cancels.</dd>
-            <dt>Escape</dt><dd>Close the file menu</dd>
-          </dl>
-        </div>
-        <div>
-          <h4>Player button</h4>
-          <dl class="keys">
-            <dt>P</dt><dd>Play, press again to stop</dd>
-            <dt>Shift+P</dt><dd>Previous track</dd>
-            <dt>N</dt><dd>Next track</dd>
-            <dt>R</dt><dd>Repeat options: Off, Whole playlist, Current track. Choose with Left or Right Ctrl, then Enter. Escape cancels.</dd>
-            <dt>S</dt><dd>Shuffle on or off</dd>
-            <dt>M</dt><dd>Mute</dd>
-            <dt>+ and -</dt><dd>Volume up or down</dd>
-            <dt>Left, Right</dt><dd>Back or forward 10 seconds</dd>
-            <dt>I</dt><dd>Read what is playing, with the times</dd>
-          </dl>
-        </div>
-        <div>
-          <h4>Playlist tools</h4>
-          <dl class="keys">
-            <dt>Add a folder</dt><dd>Adds every audio file in a folder</dd>
-            <dt>Add playlist</dt><dd>Makes one more playlist</dd>
-            <dt>Remove this playlist</dt><dd>Removes the playlist you are on</dd>
-            <dt>Clear this playlist</dt><dd>Deletes all its files</dd>
-          </dl>
-        </div>
-      </div>
-
-      <h3 style="margin-top:28px">2. Hotkey sounds</h3>
-      <p>For short sounds you want on a single key, such as a jingle or a sound effect. Ten free sound effects are built in, each on the first letter of its name: A Applause, C Correct answer, D Dog bark, F Failure trumpet, G Gun shot, H Horn, L Laugh track, R Record scratch, S Silence crickets, W Wrong answer buzzer. You can replace any of them with your own. When the app updated to version 1.0.7, any sound you had on those ten keys was replaced once. Your sounds on all other keys were not changed. It has only two buttons. Layout from top to bottom:</p>
-      <ol>
-        <li><strong>Assign or customize.</strong> Puts a sound on a key, and changes it later.</li>
-        <li><strong>Play sounds.</strong> The one place where the keys play their sounds.</li>
-        <li><strong>Assigned keys.</strong> A line of text that lists your keys and their sounds.</li>
-      </ol>
-      <div class="cols2">
-        <div>
-          <h4>Assign or customize</h4>
-          <dl class="keys">
-            <dt>Type a letter or number</dt><dd>A free key opens the file chooser. Pick a file and it is assigned, then the Customize panel opens.</dd>
-            <dt>Key already used</dt><dd>You get Replace, Customize and Cancel.</dd>
-            <dt>Use the selected playlist track</dt><dd>Gives the key the file selected in the playlist instead of a new file.</dd>
-          </dl>
-        </div>
-        <div>
-          <h4>Customize panel</h4>
-          <dl class="keys">
-            <dt>Volume</dt><dd>How loud this sound is</dd>
-            <dt>Speed</dt><dd>Slower or faster, from half to double</dd>
-            <dt>Fade in, Fade out</dt><dd>Seconds to rise or fall</dd>
-            <dt>Play alone</dt><dd>Stops the music and the other sounds while this one plays</dd>
-            <dt>Resume afterwards</dt><dd>The music continues from where it stopped. Needs Play alone.</dd>
-            <dt>Loop</dt><dd>The sound repeats until you stop it. Off by default.</dd>
-            <dt>Press repeatedly</dt><dd>Each press starts another copy on top of the others, such as quick gun shots. Off means a second press stops the sound. Hold Shift and press the key to stop every copy. Off by default.</dd>
-            <dt>Keep full volume while I speak</dt><dd>This sound is not lowered by the microphone's automatic lowering. Off by default.</dd>
-            <dt>Effects for this sound</dt><dd>Section buttons, the same as on the Microphone tab: Effect preset, Pitch, Reverb, Echo / Delay and Filter / EQ. A preset is applied only when you press Enter on it. They are saved with the key.</dd>
-            <dt>Pitch</dt><dd>In the Pitch section, 12 semitones down to 12 up, without changing the speed. Speed is the slider above.</dd>
-            <dt>Test sound, Remove this key, Done</dt><dd>Try it, clear the key, or save and close</dd>
-          </dl>
-        </div>
-        <div>
-          <h4>Play sounds</h4>
-          <dl class="keys">
-            <dt>Assigned key</dt><dd>Play its sound. Press again to stop it.</dd>
-            <dt>Shift and an assigned key</dt><dd>Stop that sound at once, including every overlapping copy.</dd>
-            <dt>Hold the key + Up, Down</dt><dd>Volume of that sound, live</dd>
-            <dt>Hold the key + Left, Right</dt><dd>Speed of that sound, live</dd>
-            <dt>Escape</dt><dd>Stop everything</dd>
-          </dl>
-        </div>
-      </div>
-      <p class="hint">Sounds and their effects are saved in this app and stay after you close it and after updates. By default the keys play only while you are on the Play sounds button. In Settings you can turn on Hotkey sounds play anywhere, but the keys still never play on the Player button or the Assign or customize button.</p>
-
-      <h3 style="margin-top:28px">3. Microphone</h3>
-      <p>Real-Time Microphone and Voice Effects, for live narration and live music. The top has the live switch. Under it is a list of section buttons. A section opens only when you press its button, so the tab stays clean. Opening one closes the others. Each button says what is set, for example Reverb: on. Layout from top to bottom:</p>
-      <ol>
-        <li><strong>Live microphone.</strong> A toggle button. When on, your voice goes live to the speaker output. It shows Live or Off.</li>
-        <li><strong>Level meter.</strong> Visual only. It shows how loud the microphone is.</li>
-        <li><strong>Input.</strong> Choose the microphone and set the microphone volume.</li>
-        <li><strong>Voice preset.</strong> A list of ready-made voices.</li>
-        <li><strong>Pitch.</strong> Makes the voice higher or deeper.</li>
-        <li><strong>Reverb.</strong> The sound of a room or hall.</li>
-        <li><strong>Echo / Delay.</strong> Repeats of your voice.</li>
-        <li><strong>Filter / EQ.</strong> Bass, middle, treble and cuts.</li>
-        <li><strong>Lower the background while I speak.</strong> Automatic lowering of the music and hotkey sounds when you talk.</li>
-      </ol>
-      <div class="cols2">
-        <div>
-          <h4>Live microphone</h4>
-          <dl class="keys">
-            <dt>Enter or Space</dt><dd>Turn the microphone on or off</dd>
-            <dt>F3</dt><dd>Turn the microphone on or off from anywhere</dd>
-            <dt>Mute output</dt><dd>In Settings. It also silences the microphone.</dd>
-          </dl>
-        </div>
-        <div>
-          <h4>Section buttons</h4>
-          <dl class="keys">
-            <dt>Enter or Space</dt><dd>Open or close the section</dd>
-            <dt>Up, Down</dt><dd>Move to the previous or next section button</dd>
-            <dt>Home, End</dt><dd>First or last section button</dd>
-            <dt>Tab</dt><dd>Go into the open section</dd>
-          </dl>
-        </div>
-        <div>
-          <h4>Voice preset</h4>
-          <dl class="keys">
-            <dt>Arrows, or Left and Right Ctrl</dt><dd>Move through the list. Nothing is changed yet.</dd>
-            <dt>Enter or Space</dt><dd>Apply the preset you are on. It turns off the effects that are not part of it.</dd>
-            <dt>Presets</dt><dd>No effects, Radio voice, Telephone, Deep announcer, Deep voice, High voice, Warm room, Big hall, Slapback echo, Long echo</dd>
-          </dl>
-        </div>
-        <div>
-          <h4>Pitch, Reverb, Echo / Delay, Filter / EQ</h4>
-          <dl class="keys">
-            <dt>Turn on checkbox</dt><dd>Switches the effect on. Its sliders are off until you do.</dd>
-            <dt>Pitch shift</dt><dd>12 semitones down to 12 up. The speed does not change.</dd>
-            <dt>Reverb</dt><dd>Amount and room size</dd>
-            <dt>Echo / Delay</dt><dd>Echo time, repeats and amount</dd>
-            <dt>Filter / EQ</dt><dd>Bass, middle, treble, low cut (removes rumble) and high cut (removes hiss)</dd>
-          </dl>
-        </div>
-        <div>
-          <h4>Input</h4>
-          <dl class="keys">
-            <dt>Microphone</dt><dd>Which microphone to use. Changing it while live switches at once.</dd>
-            <dt>Microphone volume</dt><dd>0 to 150 percent</dd>
-          </dl>
-        </div>
-        <div>
-          <h4>Lower the background while I speak</h4>
-          <dl class="keys">
-            <dt>Checkbox</dt><dd>When you speak, the music and the hotkey sounds get quieter by themselves, then come back about one second after you stop.</dd>
-            <dt>Volume while I speak</dt><dd>How loud they stay</dd>
-            <dt>Voice sensitivity</dt><dd>Higher reacts to quieter voices</dd>
-          </dl>
-        </div>
-      </div>
-      <p class="hint">Use headphones, or keep the microphone away from the speakers, to avoid a loud squeal. Effects change while you talk, with no gap. Pitch adds a very small delay, about one twentieth of a second. The microphone turns itself off if it is unplugged. If Windows blocks it, allow desktop apps to use the microphone in Settings, Privacy and security, Microphone.</p>
-
-      <h3 style="margin-top:28px">4. Settings</h3>
-      <p>Choices that stay the same until you change them. Layout from top to bottom, in four groups: Sound, Built-in sound effects, Announcer and Keyboard. Repeat is not here. Press R on the Player button.</p>
-      <div class="cols2">
-        <div>
-          <h4>Sound</h4>
-          <dl class="keys">
-            <dt>Volume</dt><dd>Master volume. Left and Right arrows change it.</dd>
-            <dt>Crossfade</dt><dd>Seconds where one track fades into the next</dd>
-            <dt>Mute output</dt><dd>Silence everything</dd>
-            <dt>Lower the music</dt><dd>The music gets quieter while a hotkey sound plays</dd>
-          </dl>
-        </div>
-        <div>
-          <h4>Built-in sound effects</h4>
-          <dl class="keys">
-            <dt>Restore built-in sound effects</dt><dd>Puts back the ready-made sounds on keys A, C, D, F, G, H, L, R, S and W that you removed. It never changes a key that has your own sound.</dd>
-          </dl>
-        </div>
-        <div>
-          <h4>Announcer</h4>
-          <dl class="keys">
-            <dt>Voice announcer</dt><dd>Says each track title on air</dd>
-          </dl>
-        </div>
-        <div>
-          <h4>Keyboard</h4>
-          <dl class="keys">
-            <dt>Hotkey sounds play anywhere</dt><dd>Off by default. When on, an assigned key plays its sound from anywhere in the app, except on the Player button and the Assign or customize button.</dd>
-            <dt>Hotkey mode</dt><dd>Every key reaches the console, even with NVDA or JAWS. F2 toggles it. It turns off heading navigation, except in Help.</dd>
-          </dl>
-        </div>
-      </div>
-
-      <h3 style="margin-top:28px">5. Help</h3>
-      <p>This section. It is plain text that you read with the reading cursor. Tab moves into it. Layout from top to bottom:</p>
-      <ol>
-        <li><strong>The explanation of each section</strong>, starting with Playlist.</li>
-        <li><strong>Keys that work everywhere.</strong></li>
-      </ol>
-
-      <h3 style="margin-top:28px">Keys that work everywhere</h3>
-      <dl class="keys">
-        <dt>Left, Right on a section tab</dt><dd>Switch between Playlist, Hotkey sounds, Microphone, Settings and Help</dd>
-        <dt>Esc</dt><dd>Stop the music and all hotkey sounds</dd>
-        <dt>F3</dt><dd>Live microphone on or off</dd>
-        <dt>F2</dt><dd>Hotkey mode on or off</dd>
-        <dt>Ctrl+Shift+U</dt><dd>Check for updates. The desktop app also checks by itself when it opens.</dd>
-      </dl>
+      <div class="helpdoc guide" role="document" tabindex="0" aria-label="Help text. Use the reading cursor.">
+<h3>Welcome to Accessible Soundboard Cartwall</h3>
+<p>Greetings! Thank you for using this application!</p>
+<p>Before we start, let me first introduce to you what Accessible Soundboard Cartwall is.</p>
+<p>Accessible Soundboard Cartwall is a lightweight desktop audio player and soundboard built for fast playback, cueing, audio customization, real-time voice effects, and accessible keyboard controls. It lets you manage playlists, trigger and customize assigned hotkey sounds, and monitor playback status in one clean interface.</p>
+<p>Now let me guide you on how to use this application so you can easily navigate it. Let's start!</p>
+<h3>Quick Start for a Brand-New User</h3>
+<p>Follow these steps the first time you open the app:</p>
+<ul><li>Open the app from the Desktop. Wait a moment; the status line announces when it is ready.</li><li>When the screen reader says, "Accessible Soundboard Cartwall is already open, thank you for using it!" it means you can now use it.</li><li>To navigate it, press the Tab key first. When you hear "Playlist tab selected," it means you are now in the tab section of the application.</li><li>To switch between different tabs, just press the Right Arrow or Left Arrow key. There are five tabs in the application:</li></ul>
+<ul><li>First: Playlist. Load and play music, jingles, and ads. There are up to three playlists at once, and you can add more.</li><li>Second: Hotkey Sounds. Put sound effects on keys and play them instantly. For example, on the G key, assign a gun sound effect from your file explorer.</li><li>Third: Microphone. Talk live, change your voice with custom effects, and lower the music while you speak.</li><li>Fourth: Settings. Adjust volume, crossfade, mute, ducking, announcer, and keyboard options.</li><li>Fifth: Help. A built-in reference that is readable with your screen reader.</li></ul>
+<p>Now let's go back to the Playlist tab.</p>
+<p>To navigate from that tab, press the Tab key again to move into the tab's controls. The process is the same when you go to other tabs like Settings or Help. The screen reader will say "Playlist 1," which means you are now in the playlist selection. There are three default playlists you can use, and you can add more.</p>
+<p>To switch between different playlists, just use the Right Arrow or Left Arrow key. To select a playlist, you only need to move the focus directly onto the playlist you want, for example, Playlist 1. It is automatically selected, so you do not need to press Enter. This works just like the tabs at the top, such as the Playlist tab or Settings tab. Now let's return and continue.</p>
+<h3>The Playlist Tab, Continued</h3>
+<p>Now that you are in a playlist, press the Tab key to move forward.</p>
+<p><strong>1. New on this playlist.</strong> The screen reader says "New on this playlist." This is where you add your songs, jingles, and ads. Press Enter and a file window opens. Choose one or more audio files from your computer, then confirm. The files are added to the playlist you selected. Choose each playlist first, then add its files.</p>
+<p><strong>2. The files list.</strong> Press Tab again to enter the list of tracks.</p>
+<ul><li>To move between tracks, press the Right Arrow or Left Arrow key. The Left and Right Control keys also work.</li><li>Press Enter on a track to open its menu, which has three choices: Delete, Adjust position, and Cancel.</li><li>Delete removes the track from the playlist.</li><li>Adjust position lets you move the track to another place in the list. Press the Left or Right Control key to move it, press Enter to confirm, or press Escape to cancel.</li><li>Cancel closes the menu and changes nothing.</li></ul>
+<p>If the playlist is empty, the app tells you so and reminds you to use "New on this playlist."</p>
+<p><strong>3. Now playing.</strong> Press Tab to reach this part. It shows whether the player is Stopped or Playing, the track title, the next track, the time elapsed, and the time remaining.</p>
+<p><strong>4. The Player button.</strong> Press Tab again. This is the main control for your music. You do not need to press Enter. Just type these keys while the focus is on it:</p>
+<ul><li>P to play, and press P again to stop.</li><li>Shift+P for the previous track.</li><li>N for the next track.</li><li>R to open the repeat options.</li><li>S to turn shuffle on or off.</li><li>M to mute.</li><li>Plus and Minus to raise or lower the volume.</li><li>Right Arrow and Left Arrow to skip forward or back 10 seconds.</li><li>I to hear the current status and the times.</li></ul>
+<p><strong>Repeat options.</strong> When you press R, a small menu opens: Off, Whole playlist, Current track, and Cancel. Move with the arrow keys and press Enter to choose. If you press Escape instead, the menu closes and your music keeps playing.</p>
+<p><strong>5. Playlist tools.</strong> Press Tab again to find these buttons:</p>
+<ul><li>Add a folder loads all the audio files inside a folder.</li><li>Add playlist creates another playlist.</li><li>Remove this playlist deletes the playlist you are on.</li><li>Clear this playlist removes all its tracks but keeps the playlist.</li></ul>
+<p>That is everything in the Playlist tab. Now let's go to the second tab.</p>
+<h3>The Hotkey Sounds Tab</h3>
+<p>Press Shift+Tab until you return to the tab section, then press the Right Arrow key until you hear "Hotkey sounds." This tab works like a cartwall. You put a sound on a key, and you play it instantly by typing that key.</p>
+<p>Press Tab to move inside. There are two main buttons.</p>
+<p><strong>1. Assign or customize.</strong> Press Enter, then type a letter or number.</p>
+<ul><li>If the key is free, a file window opens. Choose the sound from your computer. For example, press G and choose a gun sound. You can also use the track currently selected in your playlist.</li><li>If the key already has a sound, a menu opens with Replace, Customize, and Cancel.</li></ul>
+<p><strong>2. Play sounds.</strong> Move to this button, then simply type a key to play its sound. Type the key again to stop it. Press Escape to stop all sounds. While you hold a key, you can press Up Arrow or Down Arrow to change that sound's volume, and Left Arrow or Right Arrow to change its speed, live. To stop a sound and every overlapping copy of it at once, hold Shift and press its key.</p>
+<p><strong>Built-in sounds.</strong> Ten free sounds are ready for you, each on the first letter of its name:</p>
+<ul><li>A: Applause</li><li>C: Correct answer</li><li>D: Dog bark</li><li>F: Failure trumpet</li><li>G: Gun shot</li><li>H: Horn</li><li>L: Laugh track</li><li>R: Record scratch</li><li>S: Silence crickets</li><li>W: Wrong answer buzzer</li></ul>
+<p>You can replace any of them with your own sound. If you remove one by mistake, use "Restore built-in sound effects" in the Settings tab.</p>
+<p><strong>The Customize panel.</strong> Each sound has its own settings:</p>
+<ul><li>Volume and Speed: how loud, and how fast or slow.</li><li>Fade in and Fade out: a smooth start and end, in seconds.</li><li>Play alone: stops the music and other sounds while this one plays.</li><li>Resume afterwards: when the sound ends, the music continues from where it stopped. This needs Play alone.</li><li>Loop: repeats the sound until you stop it.</li><li>Press repeatedly: each press starts another copy on top of the others, like fast gun shots. To stop all the copies, hold Shift and press the key.</li><li>Keep full volume while I speak: the sound is not lowered when you talk into the microphone.</li><li>Effects for this sound: buttons for Effect preset, Pitch, Reverb, Echo or Delay, and Filter or EQ. They work the same way as on the Microphone tab.</li><li>Test sound, Remove this key, and Done.</li></ul>
+<p>Loop, Press repeatedly, and Keep full volume are all off by default. Everything is saved, so your sounds are still there the next time you open the app.</p>
+<h3>The Microphone Tab</h3>
+<p>This tab lets you hear your own voice through the app, change it with effects, and have the music go down automatically while you speak. Please wear headphones, or your voice will feed back and squeal.</p>
+<ul><li>Live microphone button: press Enter to turn the mic on or off. You can also press F3 from any tab.</li><li>A level meter shows your input visually.</li></ul>
+<p>Below it are section buttons. Press Enter or Space to open one, and press it again to close it. Use the Up and Down Arrow keys to move between them. Opening one closes the others.</p>
+<ul><li>Input: choose your microphone and set its volume, from 0 to 150 percent.</li><li>Voice preset: Radio voice, Telephone, Deep announcer, Deep voice, High voice, Warm room, Big hall, Slapback echo, and Long echo. The arrow keys only move between presets. Press Enter to apply one, so nothing changes by accident.</li><li>Pitch: raise or lower your voice from minus 12 to plus 12 steps without changing the speed.</li><li>Reverb: the amount and the room size.</li><li>Echo or Delay: the time, the repeats, and the amount.</li><li>Filter or EQ: bass, middle, treble, low cut, and high cut.</li><li>Lower the background while I speak: when it is on, which is the default, the music goes down as you talk and comes back about one second after you stop. You can set the volume while speaking and the voice sensitivity.</li></ul>
+<p>If you hear nothing, check that Mute output is off and that Windows allows desktop apps to use the microphone.</p>
+<h3>The Settings Tab</h3>
+<ul><li>Sound: Volume, Crossfade (one track fades into the next), Mute output (this also silences the microphone), and "Lower the music while a hotkey sound plays."</li><li>Built-in sound effects: "Restore built-in sound effects" puts back any of the ten you removed. It never touches a key that has your own sound.</li><li>Announcer: the voice announcer says each track title as it starts.</li><li>Keyboard: "Hotkey sounds play anywhere," which is off by default. When it is on, you can play hotkey sounds from most places in the app, not only on the Play sounds button. Hotkey mode is also here.</li></ul>
+<h3>The Help Tab and Keys That Work Everywhere</h3>
+<p>The Help tab is a document you can read with your screen reader. Press Tab to enter it. These keys work in every tab:</p>
+<ul><li>Escape: stops the music and all hotkey sounds.</li><li>F2: turns Hotkey mode on or off. If the keys do not respond, press F2 twice, or press NVDA+Space.</li><li>F3: turns the live microphone on or off.</li><li>Control+Shift+U: checks for updates.</li></ul>
+<p><strong>Updates.</strong> You never need to reinstall. The app checks online a few seconds after it opens, downloads the update quietly, and uses it the next time you open the app.</p>
+<p>Thank you for using Accessible Soundboard Cartwall!</p>
       </div>
     </section>
   </main>
@@ -1729,6 +1575,7 @@ main{display:flex;flex-direction:column}
   $('hotany').addEventListener('change',function(e){S.hotany=e.target.checked;store.set('hotany',S.hotany);status(S.hotany?'Hotkey sounds now play anywhere, except on the Player button and the Assign or customize button.':'Hotkey sounds now play only on the Play sounds button.')});
 
   document.addEventListener('keydown',function(e){
+    if(introOn)return;
     if(e.key==='F2'&&!e.ctrlKey&&!e.altKey&&!e.metaKey){e.preventDefault();setAppMode(!S.app);return}
     if(e.key==='F3'&&!e.ctrlKey&&!e.altKey&&!e.metaKey){e.preventDefault();if(!e.repeat)micToggle();return}
     if(e.ctrlKey||e.altKey||e.metaKey)return;
@@ -1812,11 +1659,38 @@ main{display:flex;flex-direction:column}
     window.addEventListener('appinstalled',function(){status('Accessible Soundboard/Cartwall installed.')});
   })();
 
+
+  /* ---------- first-time welcome guide ---------- */
+  var introOn=false;
+  function introInit(){
+    if(store.get('intro',false))return;
+    if(!store.get('introPending',false)){
+      if(store.get('bi',0)>=1||store.get('seeded',false)){store.set('intro',true);return}
+      store.set('introPending',true);
+    }
+    var box=$('intro'),src=document.querySelector('#panel-help .helpdoc');
+    if(!box||!src)return;
+    var d=src.cloneNode(true);
+    d.setAttribute('aria-label','Welcome guide. Read to the end, then press Click here to get started.');
+    var h=document.createElement('h2');h.className='sr-only';h.textContent='Welcome guide';
+    var b=document.createElement('button');b.type='button';b.className='primary go';b.textContent='Click here to get started';
+    d.appendChild(b);
+    box.appendChild(h);box.appendChild(d);box.hidden=false;
+    document.body.classList.add('intro');introOn=true;
+    b.addEventListener('click',function(){
+      store.set('intro',true);introOn=false;
+      document.body.classList.remove('intro');box.hidden=true;box.innerHTML='';
+      showTab('playlist',true);
+      status('You are on the Playlist tab. Press Tab to reach New on this playlist, or press the Right Arrow key to visit the other tabs.');
+    });
+    setTimeout(function(){try{d.focus()}catch(e){}},300);
+  }
+
   /* ---------- init ---------- */
   setVol(S.volume,true);setXf(S.xf,true);
   $('voice').checked=S.voice;$('hotany').checked=S.hotany;
   $('hduck').checked=S.hduck;setAppMode(S.app,true);initMic();
-  renderPlTabs();renderList();renderHot();refresh();clockTick();loadHot();welcome();
+  renderPlTabs();renderList();renderHot();refresh();clockTick();loadHot();welcome();introInit();
   setInterval(tick,100);setInterval(clockTick,1000);
 })();
 </script>
