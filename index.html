@@ -255,7 +255,7 @@ main{display:flex;flex-direction:column}
         <button id="hotPlay" type="button" class="primary" aria-describedby="playHelp">Play sounds: type an assigned key</button>
       </div>
       <p class="hint" id="assignHelp">Assign or customize: move to this button, then type a letter or number. A free key opens the file chooser. A key that already has a sound offers Replace or Customize.</p>
-      <p class="hint" id="playHelp">Play sounds: move to this button, then type an assigned key to play its sound. Type it again to stop it. This is the only place where the keys play. Escape stops everything.</p>
+      <p class="hint" id="playHelp">Play sounds: move to this button, then type an assigned key to play its sound. Type it again to stop it, or hold Shift and press the key to stop every copy. This is the only place where the keys play. Escape stops everything.</p>
       <p class="hint" id="hotSummary">No sounds assigned yet.</p>
 
       <div id="hotOpts" class="edit" role="group" aria-labelledby="ho-h" hidden>
@@ -279,6 +279,9 @@ main{display:flex;flex-direction:column}
         </div>
         <div class="field inline"><input type="checkbox" id="heSolo"><label for="heSolo">Play alone: stop the music and all other sounds when this one plays. Off means it plays together with them.</label></div>
         <div class="field inline"><input type="checkbox" id="heResume"><label for="heResume">Resume afterwards: when this sound ends, what was playing continues from where it stopped. Needs Play alone.</label></div>
+        <div class="field inline"><input type="checkbox" id="heLoop"><label for="heLoop">Loop: play this sound again and again until you stop it. Off by default.</label></div>
+        <div class="field inline"><input type="checkbox" id="heOver"><label for="heOver">Press repeatedly: each press starts another copy on top of the others, for example quick gun shots. Off means a second press stops the sound. To stop every copy, hold Shift and press the key. Off by default.</label></div>
+        <div class="field inline"><input type="checkbox" id="heNoDuck"><label for="heNoDuck">Keep full volume while I speak: this sound is not lowered when you talk into the microphone. Off by default.</label></div>
         <div class="fxbox"><h3>Effects for this sound</h3><div class="acc" id="heFx"></div></div>
         <div class="row"><button id="heTest" type="button">Test sound</button><button id="heRemove" type="button" class="danger">Remove this key</button><button id="heDone" type="button" class="primary">Done</button></div>
       </div>
@@ -418,6 +421,9 @@ main{display:flex;flex-direction:column}
             <dt>Fade in, Fade out</dt><dd>Seconds to rise or fall</dd>
             <dt>Play alone</dt><dd>Stops the music and the other sounds while this one plays</dd>
             <dt>Resume afterwards</dt><dd>The music continues from where it stopped. Needs Play alone.</dd>
+            <dt>Loop</dt><dd>The sound repeats until you stop it. Off by default.</dd>
+            <dt>Press repeatedly</dt><dd>Each press starts another copy on top of the others, such as quick gun shots. Off means a second press stops the sound. Hold Shift and press the key to stop every copy. Off by default.</dd>
+            <dt>Keep full volume while I speak</dt><dd>This sound is not lowered by the microphone's automatic lowering. Off by default.</dd>
             <dt>Effects for this sound</dt><dd>Section buttons, the same as on the Microphone tab: Effect preset, Pitch, Reverb, Echo / Delay and Filter / EQ. A preset is applied only when you press Enter on it. They are saved with the key.</dd>
             <dt>Pitch</dt><dd>In the Pitch section, 12 semitones down to 12 up, without changing the speed. Speed is the slider above.</dd>
             <dt>Test sound, Remove this key, Done</dt><dd>Try it, clear the key, or save and close</dd>
@@ -427,6 +433,7 @@ main{display:flex;flex-direction:column}
           <h4>Play sounds</h4>
           <dl class="keys">
             <dt>Assigned key</dt><dd>Play its sound. Press again to stop it.</dd>
+            <dt>Shift and an assigned key</dt><dd>Stop that sound at once, including every overlapping copy.</dd>
             <dt>Hold the key + Up, Down</dt><dd>Volume of that sound, live</dd>
             <dt>Hold the key + Left, Right</dt><dd>Speed of that sound, live</dd>
             <dt>Escape</dt><dd>Stop everything</dd>
@@ -1313,7 +1320,7 @@ main{display:flex;flex-direction:column}
   function updateDuck(){S.hotDuck=(S.hduck&&Object.keys(hotPlaying).length)?.3:1}
   var soloResume=false,soloHeld=[];
   function setHotVol(p){var v=hotVol(p);if(p.gain){try{p.gain.gain.value=v}catch(e){}}else p.a.volume=v}
-  function hotVol(p){return Math.max(0,Math.min(1,(S.muted?0:S.volume/100)*(p.h.vol/100)*p.level*S.micDuck))}
+  function hotVol(p){return Math.max(0,Math.min(1,(S.muted?0:S.volume/100)*(p.h.vol/100)*p.level*(p.h.nd?1:S.micDuck)))}
   function resumeMusic(){
     decks.forEach(function(d,k){if(k===S.active||(d.idx>=0&&d.level>0)){var q=d.el.play();if(q&&q.catch)q.catch(function(){})}});
     S.playing=true;renderList();refresh();
@@ -1335,9 +1342,11 @@ main{display:flex;flex-direction:column}
     delete hotPlaying[k];updateDuck();
     if(p.solo&&!Object.keys(hotPlaying).some(function(o){return hotPlaying[o].solo}))soloDone();
   }
+  var hotSeq=0;
+  function instKeys(k){return Object.keys(hotPlaying).filter(function(x){return x===k||x.indexOf(k+'#')===0})}
+  function eachInst(k,fn){instKeys(k).forEach(function(id){var p=hotPlaying[id];if(p)fn(p,id)})}
   function stopHot(k,fade){
-    var p=hotPlaying[k];if(!p)return;
-    if(fade&&p.h.fout>0)p.state='out';else endHot(k,p);
+    eachInst(k,function(p,id){if(fade&&p.h.fout>0)p.state='out';else endHot(id,p)});
   }
   function stopHotAll(){
     soloResume=false;soloHeld=[];
@@ -1345,11 +1354,12 @@ main{display:flex;flex-direction:column}
   }
   function playHot(k){
     var h=hot[k];if(!h)return;
-    var cur=hotPlaying[k];
-    if(cur){
-      if(cur.state==='out')endHot(k,cur);else stopHot(k,true);
+    var ids=instKeys(k);
+    if(ids.length&&!h.over){
+      if(ids.every(function(x){return hotPlaying[x].state==='out'}))ids.forEach(function(x){endHot(x,hotPlaying[x])});else stopHot(k,true);
       status('Stopped '+k.toUpperCase()+': '+h.name+'.');return;
     }
+    var id=ids.length?(k+'#'+(++hotSeq)):k;
     var a=new Audio(h.url),p={a:a,h:h,level:h.fin>0?0:1,state:h.fin>0?'in':'play',solo:!!h.solo};
     if(h.solo){
       soloHeld=[];soloResume=false;
@@ -1377,12 +1387,12 @@ main{display:flex;flex-direction:column}
         }
       }
     }
-    hotPlaying[k]=p;updateDuck();setHotVol(p);
-    a.playbackRate=h.rate||1;
-    a.onended=function(){endHot(k,p)};
+    hotPlaying[id]=p;updateDuck();setHotVol(p);
+    a.playbackRate=h.rate||1;a.loop=!!h.loop;
+    a.onended=function(){endHot(id,p)};
     var q=a.play();
-    if(q&&q.catch)q.catch(function(){endHot(k,p);status('Could not play the sound on key '+k.toUpperCase()+'.')});
-    status('Playing '+k.toUpperCase()+': '+h.name+(h.solo?(h.resume?'. Everything else paused. It will resume afterwards.':'. Everything else stopped.'):'.'));
+    if(q&&q.catch)q.catch(function(){endHot(id,p);status('Could not play the sound on key '+k.toUpperCase()+'.')});
+    status('Playing '+k.toUpperCase()+': '+h.name+(h.loop?', looping':'')+(h.solo?(h.resume?'. Everything else paused. It will resume afterwards.':'. Everything else stopped.'):'.'));
   }
   setInterval(function(){
     Object.keys(hotPlaying).forEach(function(k){
@@ -1390,7 +1400,7 @@ main{display:flex;flex-direction:column}
       if(p.held)return;
       var left=isFinite(dur)?dur-a.currentTime:Infinity;
       if(p.state==='in'){p.level=h.fin>0?Math.min(1,p.level+dt/h.fin):1;if(p.level>=1)p.state='play'}
-      if(p.state!=='out'&&h.fout>0&&isFinite(dur)&&dur>h.fin+h.fout&&left<=h.fout)p.state='out';
+      if(p.state!=='out'&&!h.loop&&h.fout>0&&isFinite(dur)&&dur>h.fin+h.fout&&left<=h.fout)p.state='out';
       if(p.state==='out'){p.level=h.fout>0?Math.max(0,p.level-dt/h.fout):0;if(p.level<=0){endHot(k,p);return}}
       setHotVol(p);
     });
@@ -1399,7 +1409,7 @@ main{display:flex;flex-direction:column}
     if(!k||!blob)return;
     if(hot[k]){stopHot(k);try{URL.revokeObjectURL(hot[k].url)}catch(e){}}
     var o=hot[k];
-    hot[k]={key:k,name:name,blob:blob,url:URL.createObjectURL(blob),vol:o?o.vol:100,fin:o?o.fin:0,fout:o?o.fout:0,solo:o?o.solo:false,resume:o?o.resume:false,rate:o?o.rate:1,fx:o?o.fx:fxClean(null)};
+    hot[k]={key:k,name:name,blob:blob,url:URL.createObjectURL(blob),vol:o?o.vol:100,fin:o?o.fin:0,fout:o?o.fout:0,solo:o?o.solo:false,resume:o?o.resume:false,rate:o?o.rate:1,fx:o?o.fx:fxClean(null),loop:o?!!o.loop:false,over:o?!!o.over:false,nd:o?!!o.nd:false};
     renderHot();
     saveHot(k);
     openEdit(k);
@@ -1407,7 +1417,7 @@ main{display:flex;flex-direction:column}
   }
   function saveHot(k){
     var h=hot[k];if(!h)return;
-    dbDo('readwrite',function(st){return st.put({key:k,name:h.name,blob:h.blob,vol:h.vol,fin:h.fin,fout:h.fout,solo:h.solo,resume:h.resume,rate:h.rate,fx:h.fx})}).catch(function(){status('Saved for this visit only. This browser would not keep the file.')});
+    dbDo('readwrite',function(st){return st.put({key:k,name:h.name,blob:h.blob,vol:h.vol,fin:h.fin,fout:h.fout,solo:h.solo,resume:h.resume,rate:h.rate,fx:h.fx,loop:!!h.loop,over:!!h.over,nd:!!h.nd})}).catch(function(){status('Saved for this visit only. This browser would not keep the file.')});
   }
   function removeHot(k){
     var h=hot[k];if(!h)return;
@@ -1442,12 +1452,12 @@ main{display:flex;flex-direction:column}
     var k=b[0];if(hot[k]&&!force)return false;
     if(hot[k]){stopHot(k);try{URL.revokeObjectURL(hot[k].url)}catch(e){}}
     var blob=b64Blob(b[2]);
-    hot[k]={key:k,name:b[1],blob:blob,url:URL.createObjectURL(blob),vol:100,fin:0,fout:0,solo:false,resume:false,rate:1,fx:fxClean(null)};
+    hot[k]={key:k,name:b[1],blob:blob,url:URL.createObjectURL(blob),vol:100,fin:0,fout:0,solo:false,resume:false,rate:1,fx:fxClean(null),loop:false,over:false,nd:false};
     saveHot(k);return true;
   }
   function loadHot(){
     dbDo('readonly',function(st){return st.getAll()}).then(function(rows){
-      (rows||[]).forEach(function(r){hot[r.key]={key:r.key,name:r.name,blob:r.blob,url:URL.createObjectURL(r.blob),vol:r.vol==null?100:r.vol,fin:r.fin||0,fout:r.fout||0,solo:!!r.solo,resume:!!r.resume,rate:r.rate||1,fx:fxClean(r.fx)}});
+      (rows||[]).forEach(function(r){hot[r.key]={key:r.key,name:r.name,blob:r.blob,url:URL.createObjectURL(r.blob),vol:r.vol==null?100:r.vol,fin:r.fin||0,fout:r.fout||0,solo:!!r.solo,resume:!!r.resume,rate:r.rate||1,fx:fxClean(r.fx),loop:!!r.loop,over:!!r.over,nd:!!r.nd}});
       if(store.get('bi',0)<2){
         /* version 1.0.7: the ten sound effects are built in for every user, on the first letter of their name */
         store.set('bi',2);store.set('seeded',true);
@@ -1464,15 +1474,15 @@ main{display:flex;flex-direction:column}
         });
         renderHot();
         var keys=BUILTIN.map(function(x){return x[0].toUpperCase()}).sort().join(', ');
-        status((had?'Updated. ':'Welcome. ')+'Ten sound effects are now built in, on keys '+keys+'. '+
+        status('Accessible Soundboard Cartwall is already open, thank you for using it! '+(had?'Updated. ':'')+'Ten sound effects are now built in, on keys '+keys+'. '+
           (lost.length?('Your own sounds on these keys were replaced: '+lost.join('. ')+'. Use Assign or customize, then Replace, to put your own sound back. '):'')+
           'Go to Hotkey sounds, press Play sounds, then type a key.');
         return;
       }
       renderHot();
       var n=Object.keys(hot).length;
-      if(n)status('Ready. '+plural(n,'hotkey sound')+' loaded.');
-    }).catch(function(){});
+      status('Accessible Soundboard Cartwall is already open, thank you for using it!');
+    }).catch(function(){status('Accessible Soundboard Cartwall is already open, thank you for using it!')});
   }
   var assignK=null;
   function showOpts(k){
@@ -1519,7 +1529,7 @@ main{display:flex;flex-direction:column}
       status(k.toUpperCase()+' volume '+h.vol+' percent.');
     }else{
       h.rate=Math.max(0.5,Math.min(2,Math.round((h.rate+(key==='ArrowRight'?0.05:-0.05))*100)/100));
-      var p=hotPlaying[k];if(p)p.a.playbackRate=h.rate;
+      eachInst(k,function(p){p.a.playbackRate=h.rate});
       status(k.toUpperCase()+' speed '+h.rate.toFixed(2)+' times.');
     }
     if(editing===k){$('heVol').value=h.vol;$('heRate').value=h.rate;syncEditText()}
@@ -1538,7 +1548,7 @@ main{display:flex;flex-direction:column}
   var heFxApi=buildFx($('heFx'),'hf',{presetTitle:'Effect preset',
     onChange:function(fx){
       var h=hot[editing];if(!h)return;
-      h.fx=fx;var p=hotPlaying[editing];if(p&&p.fx)p.fx.set(fx);
+      h.fx=fx;eachInst(editing,function(p){if(p.fx)p.fx.set(fx)});
       scheduleSave(editing);
     },
     extra:function(){return ' Use Test sound to hear it.'}});
@@ -1552,17 +1562,17 @@ main{display:flex;flex-direction:column}
     var h=hot[k];if(!h)return;
     editing=k;
     $('heKey').textContent=k.toUpperCase()+': '+h.name;
-    $('heVol').value=h.vol;$('heIn').value=h.fin;$('heOut').value=h.fout;$('heSolo').checked=!!h.solo;$('heResume').checked=!!h.resume;$('heRate').value=h.rate;
+    $('heVol').value=h.vol;$('heIn').value=h.fin;$('heOut').value=h.fout;$('heSolo').checked=!!h.solo;$('heResume').checked=!!h.resume;$('heLoop').checked=!!h.loop;$('heOver').checked=!!h.over;$('heNoDuck').checked=!!h.nd;$('heRate').value=h.rate;
     heFxApi.set(h.fx);heFxApi.collapse();
     syncEditText();$('hotEdit').hidden=false;
     $('heVol').focus();
   }
   function editChanged(){
     var h=hot[editing];if(!h)return;
-    h.vol=+$('heVol').value;h.fin=+$('heIn').value;h.fout=+$('heOut').value;h.solo=$('heSolo').checked;h.resume=$('heResume').checked;h.rate=+$('heRate').value;if(hotPlaying[editing])hotPlaying[editing].a.playbackRate=h.rate;
+    h.vol=+$('heVol').value;h.fin=+$('heIn').value;h.fout=+$('heOut').value;h.solo=$('heSolo').checked;h.resume=$('heResume').checked;h.loop=$('heLoop').checked;h.over=$('heOver').checked;h.nd=$('heNoDuck').checked;h.rate=+$('heRate').value;eachInst(editing,function(p){p.a.playbackRate=h.rate;p.a.loop=!!h.loop});
     syncEditText();saveHot(editing);
   }
-  ['heVol','heRate','heIn','heOut','heSolo','heResume'].forEach(function(id){$(id).addEventListener('input',editChanged);$(id).addEventListener('change',editChanged)});
+  ['heVol','heRate','heIn','heOut','heSolo','heResume','heLoop','heOver','heNoDuck'].forEach(function(id){$(id).addEventListener('input',editChanged);$(id).addEventListener('change',editChanged)});
   $('heRemove').onclick=function(){var k=editing;if(!k)return;$('hotEdit').hidden=true;editing=null;removeHot(k);$('assignKey').focus()};
   $('heTest').onclick=function(){if(editing)playHot(editing)};
   $('heDone').onclick=function(){
@@ -1719,12 +1729,23 @@ main{display:flex;flex-direction:column}
     if(type==='range'&&(e.key==='ArrowLeft'||e.key==='ArrowRight'))return;
     var k=e.key;
     var hotOk=t.id==='hotPlay'||(S.hotany&&t.id!=='playerBtn'&&t.id!=='assignKey'&&!(t.closest&&t.closest('#repMenu,#hotOpts,#hotEdit')));
+    if(e.shiftKey&&hotOk){
+      var sm=/^(?:Key([A-Z])|Digit([0-9]))$/.exec(e.code||'');
+      if(sm){
+        var sk=(sm[1]||sm[2]).toLowerCase();e.preventDefault();
+        if(e.repeat)return;
+        if(!hot[sk])status('Key '+sk.toUpperCase()+' has no sound.');
+        else if(instKeys(sk).length){stopHot(sk);status('Stopped every copy of '+sk.toUpperCase()+': '+hot[sk].name+'.')}
+        else status(sk.toUpperCase()+': '+hot[sk].name+' is not playing.');
+        return;
+      }
+    }
     if(k.length===1&&hotOk){
       var lk=k.toLowerCase();e.preventDefault();
       if(!hot[lk]){if(t.id==='hotPlay'&&!e.repeat&&/[a-z0-9]/.test(lk))status('Key '+lk.toUpperCase()+' has no sound. Use Assign or customize first.');return}
       if(e.repeat)return;
       held[lk]={adj:false,started:false};
-      if(!hotPlaying[lk]){playHot(lk);held[lk].started=true}
+      if(!instKeys(lk).length||hot[lk].over){playHot(lk);held[lk].started=true}
       return;
     }
     if(k==='Escape'){e.preventDefault();stopAll();stopHotAll()}
@@ -1785,7 +1806,7 @@ main{display:flex;flex-direction:column}
   setVol(S.volume,true);setXf(S.xf,true);
   $('voice').checked=S.voice;$('hotany').checked=S.hotany;
   $('hduck').checked=S.hduck;setAppMode(S.app,true);initMic();
-  renderPlTabs();renderList();renderHot();refresh();clockTick();loadHot();
+  renderPlTabs();renderList();renderHot();refresh();clockTick();status('Accessible Soundboard Cartwall is already open, thank you for using it!');loadHot();
   setInterval(tick,100);setInterval(clockTick,1000);
 })();
 </script>
