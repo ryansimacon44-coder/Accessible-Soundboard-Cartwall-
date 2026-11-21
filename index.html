@@ -35,8 +35,6 @@ body{background:var(--bg);color:var(--ink);font-family:var(--font);font-size:17p
 .wrap{max-width:960px;margin:0 auto;display:flex;flex-direction:column;gap:16px}
 .wrap:focus{outline:none}
 .sr-only{position:absolute;width:1px;height:1px;margin:-1px;padding:0;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
-.skip{position:absolute;left:-999px;top:8px;background:var(--ink);color:var(--bg);padding:10px 14px;border-radius:6px;z-index:20}
-.skip:focus{left:8px}
 :focus-visible{outline:3px solid var(--focus);outline-offset:2px}
 h1{font-size:1.35rem;margin:0;font-weight:600;letter-spacing:-.01em}
 h2{margin:0}
@@ -178,7 +176,6 @@ main{display:flex;flex-direction:column}
   <strong>The file chooser may be blocked in this preview.</strong>
   <button type="button" id="openFull" class="primary" style="margin-left:10px">Open as full app</button>
 </div>
-<a class="skip" href="#panel-playlist" id="skip">Skip to playlist</a>
 <div class="wrap" id="app" tabindex="-1">
   <h1 class="sr-only">Accessible Soundboard/Cartwall</h1>
   <div class="topbar">
@@ -603,6 +600,23 @@ main{display:flex;flex-direction:column}
     setTimeout(function(){l.textContent=msg},40);
   }
   window.rcAnnounce=function(m){status(m)};
+  /* said aloud once, automatically, as soon as the app is open */
+  function welcome(){
+    var W='Accessible Soundboard Cartwall is already open, thank you for using it!',done=false;
+    function fallback(){if(!done){done=true;status(W)}}
+    function go(){
+      if(done)return;
+      try{
+        var u=new SpeechSynthesisUtterance(W);
+        u.onstart=function(){done=true};
+        u.onerror=function(){fallback()};
+        speechSynthesis.cancel();speechSynthesis.speak(u);
+      }catch(e){fallback()}
+    }
+    if(!('speechSynthesis' in window)){fallback();return}
+    setTimeout(go,600);
+    setTimeout(fallback,4000);
+  }
   function speak(text){
     if(!('speechSynthesis' in window))return;
     try{
@@ -1474,15 +1488,14 @@ main{display:flex;flex-direction:column}
         });
         renderHot();
         var keys=BUILTIN.map(function(x){return x[0].toUpperCase()}).sort().join(', ');
-        status('Accessible Soundboard Cartwall is already open, thank you for using it! '+(had?'Updated. ':'')+'Ten sound effects are now built in, on keys '+keys+'. '+
+        status((had?'Updated. ':'')+'Ten sound effects are now built in, on keys '+keys+'. '+
           (lost.length?('Your own sounds on these keys were replaced: '+lost.join('. ')+'. Use Assign or customize, then Replace, to put your own sound back. '):'')+
           'Go to Hotkey sounds, press Play sounds, then type a key.');
         return;
       }
       renderHot();
       var n=Object.keys(hot).length;
-      status('Accessible Soundboard Cartwall is already open, thank you for using it!');
-    }).catch(function(){status('Accessible Soundboard Cartwall is already open, thank you for using it!')});
+    }).catch(function(){});
   }
   var assignK=null;
   function showOpts(k){
@@ -1773,9 +1786,6 @@ main{display:flex;flex-direction:column}
     if(n===null)return;
     e.preventDefault();e.stopPropagation();showTab(TABS[n],true);
   });
-  $('skip').addEventListener('click',function(e){
-    e.preventDefault();showTab('playlist');$('pltabs').children[V].focus();
-  });
 
   /* ---------- app mode: full-window check, offline cache, install ---------- */
   (function(){
@@ -1806,7 +1816,7 @@ main{display:flex;flex-direction:column}
   setVol(S.volume,true);setXf(S.xf,true);
   $('voice').checked=S.voice;$('hotany').checked=S.hotany;
   $('hduck').checked=S.hduck;setAppMode(S.app,true);initMic();
-  renderPlTabs();renderList();renderHot();refresh();clockTick();status('Accessible Soundboard Cartwall is already open, thank you for using it!');loadHot();
+  renderPlTabs();renderList();renderHot();refresh();clockTick();loadHot();welcome();
   setInterval(tick,100);setInterval(clockTick,1000);
 })();
 </script>
