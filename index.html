@@ -7,7 +7,6 @@
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" href="icon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="icon.svg">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@500&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
 <style>
 /* Layout: slim top bar, one player card that never moves, then a tab strip showing a single panel at a time.
    Calm surfaces, one accent colour, big type and strong focus rings for low vision and keyboard use. */
@@ -505,7 +504,7 @@ main{display:flex;flex-direction:column}
     pls.forEach(function(p,k){
       var b=document.createElement('button');b.type='button';b.className='pltab';b.setAttribute('role','tab');
       var nm=document.createElement('span');nm.textContent=p.name;
-      var c=document.createElement('span');c.className='cnt';
+      var c=document.createElement('span');c.className='cnt';c.setAttribute('aria-hidden','true');
       b.appendChild(nm);b.appendChild(c);
       b.addEventListener('click',function(){setView(pls.indexOf(p),true)});
       box.appendChild(b);
@@ -1332,10 +1331,13 @@ main{display:flex;flex-direction:column}
   }
   function loadHot(){
     dbDo('readonly',function(st){return st.getAll()}).then(function(rows){
-      (rows||[]).forEach(function(r){hot[r.key]={key:r.key,name:r.name,blob:r.blob,url:URL.createObjectURL(r.blob),vol:r.vol==null?100:r.vol,fin:r.fin||0,fout:r.fout||0,solo:!!r.solo,resume:!!r.resume,rate:r.rate||1,fx:fxClean(r.fx),loop:!!r.loop,over:!!r.over,nd:!!r.nd}});
-      if(store.get('bi',0)<2){
+      var done2=false;
+      (rows||[]).forEach(function(r){if(r.key==='__bi2'){done2=true;return}hot[r.key]={key:r.key,name:r.name,blob:r.blob,url:URL.createObjectURL(r.blob),vol:r.vol==null?100:r.vol,fin:r.fin||0,fout:r.fout||0,solo:!!r.solo,resume:!!r.resume,rate:r.rate||1,fx:fxClean(r.fx),loop:!!r.loop,over:!!r.over,nd:!!r.nd}});
+      if(done2&&store.get('bi',0)<2)store.set('bi',2);
+      if(store.get('bi',0)<2&&!done2){
         /* version 1.0.7: the ten sound effects are built in for every user, on the first letter of their name */
         store.set('bi',2);store.set('seeded',true);
+        dbDo('readwrite',function(st){return st.put({key:'__bi2'})}).catch(function(){});
         var had=Object.keys(hot).length,lost=[];
         Object.keys(LEGACY).forEach(function(k){
           if(hot[k]&&hot[k].name===LEGACY[k]){
@@ -1702,8 +1704,9 @@ main{display:flex;flex-direction:column}
   }
 
   /* ---------- what's new, shown once after each update ---------- */
-  var APP_VER='1.3.0',wnOn=false,wnBack=null;
+  var APP_VER='1.3.1',wnOn=false;
   var CHANGES=[
+    ['1.3.1',['The app now starts faster and works fully offline.','Fixed a rare case where a sound\'s saved settings could reset after the first launch.']],
     ['1.3.0',['If a new installer is ever needed, the app now downloads it by itself and asks if you want to install it. Your sounds and settings are kept.']],
     ['1.2.0',['A What\'s new window now appears after each update. Press Close when you have read it.','New users now get one Setup program that installs everything with a single double-click.']],
     ['1.1.0',['The first time you open the app, a welcome guide explains how to use it. Press Click here to get started at the end.','The Help tab now holds the same full tutorial.']],
@@ -1737,7 +1740,6 @@ main{display:flex;flex-direction:column}
       h+='<ul>'+c[1].map(function(t){return '<li>'+t.replace(/&/g,'&amp;').replace(/</g,'&lt;')+'</li>'}).join('')+'</ul>';
     });
     $('wnBody').innerHTML=h;
-    wnBack=document.activeElement;
     setTimeout(function(){
       if(introOn||wnOn)return;
       wnOn=true;$('app').inert=true;$('wn').hidden=false;
