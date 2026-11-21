@@ -48,6 +48,14 @@ h2{margin:0}
 .guide h3{margin:26px 0 10px}
 .guide>h3:first-child{margin-top:0}
 body.intro .topbar,body.intro main{display:none}
+#wn{position:fixed;inset:0;background:rgba(0,0,0,.55);display:flex;align-items:center;justify-content:center;z-index:50;padding:16px}
+#wn[hidden]{display:none}
+#wn .box{background:var(--bg);color:var(--ink);border:1px solid var(--line);border-radius:12px;max-width:560px;width:100%;max-height:85vh;overflow:auto;padding:22px}
+#wn h2{margin:0 0 12px}
+#wn h3{margin:16px 0 6px}
+#wn ul{margin:0 0 8px;padding-left:22px}
+#wn li{margin:0 0 6px;line-height:1.5}
+#wn .row{margin-top:16px}
 #intro{margin:8px 0 24px}
 #intro .helpdoc{outline-offset:6px}
 #intro .go{margin-top:24px;font-size:1.1rem;padding:14px 22px}
@@ -185,6 +193,13 @@ main{display:flex;flex-direction:column}
 <div id="frameWarn" class="status" role="alert" hidden style="margin:12px auto;max-width:960px;border-color:var(--air)">
   <strong>The file chooser may be blocked in this preview.</strong>
   <button type="button" id="openFull" class="primary" style="margin-left:10px">Open as full app</button>
+</div>
+<div id="wn" hidden>
+  <div class="box" role="dialog" aria-modal="true" aria-labelledby="wnTitle">
+    <h2 id="wnTitle">What's new</h2>
+    <div id="wnBody" tabindex="0"></div>
+    <div class="row"><button type="button" id="wnClose" class="primary">Close</button></div>
+  </div>
 </div>
 <div class="wrap" id="app" tabindex="-1">
   <h1 class="sr-only">Accessible Soundboard/Cartwall</h1>
@@ -398,7 +413,7 @@ main{display:flex;flex-direction:column}
 <h3>The Help Tab and Keys That Work Everywhere</h3>
 <p>The Help tab is a document you can read with your screen reader. Press Tab to enter it. These keys work in every tab:</p>
 <ul><li>Escape: stops the music and all hotkey sounds.</li><li>F2: turns Hotkey mode on or off. If the keys do not respond, press F2 twice, or press NVDA+Space.</li><li>F3: turns the live microphone on or off.</li><li>Control+Shift+U: checks for updates.</li></ul>
-<p><strong>Updates.</strong> You never need to reinstall. The app checks online a few seconds after it opens, downloads the update quietly, and uses it the next time you open the app.</p>
+<p><strong>Updates.</strong> You never need to reinstall. The app checks online a few seconds after it opens, downloads the update quietly, and uses it the next time you open the app. After an update, a What&#39;s new window tells you what changed. Press Close when you are done reading. If a new installer is ever needed, the app downloads it by itself and asks if you want to install it now.</p>
 <p>Thank you for using Accessible Soundboard Cartwall!</p>
       </div>
     </section>
@@ -1575,7 +1590,7 @@ main{display:flex;flex-direction:column}
   $('hotany').addEventListener('change',function(e){S.hotany=e.target.checked;store.set('hotany',S.hotany);status(S.hotany?'Hotkey sounds now play anywhere, except on the Player button and the Assign or customize button.':'Hotkey sounds now play only on the Play sounds button.')});
 
   document.addEventListener('keydown',function(e){
-    if(introOn)return;
+    if(introOn||wnOn)return;
     if(e.key==='F2'&&!e.ctrlKey&&!e.altKey&&!e.metaKey){e.preventDefault();setAppMode(!S.app);return}
     if(e.key==='F3'&&!e.ctrlKey&&!e.altKey&&!e.metaKey){e.preventDefault();if(!e.repeat)micToggle();return}
     if(e.ctrlKey||e.altKey||e.metaKey)return;
@@ -1686,11 +1701,64 @@ main{display:flex;flex-direction:column}
     setTimeout(function(){try{d.focus()}catch(e){}},300);
   }
 
+  /* ---------- what's new, shown once after each update ---------- */
+  var APP_VER='1.3.0',wnOn=false,wnBack=null;
+  var CHANGES=[
+    ['1.3.0',['If a new installer is ever needed, the app now downloads it by itself and asks if you want to install it. Your sounds and settings are kept.']],
+    ['1.2.0',['A What\'s new window now appears after each update. Press Close when you have read it.','New users now get one Setup program that installs everything with a single double-click.']],
+    ['1.1.0',['The first time you open the app, a welcome guide explains how to use it. Press Click here to get started at the end.','The Help tab now holds the same full tutorial.']],
+    ['1.0.9',['The app says "Accessible Soundboard Cartwall is already open, thank you for using it!" as soon as it opens.','The Skip to playlist button was removed.']],
+    ['1.0.8',['New options for each hotkey sound: Loop, Press repeatedly, and Keep full volume while I speak.','Hold Shift and press a sound\'s key to stop every copy of it.']]
+  ];
+  function vNewer(a,b){
+    var x=String(a).split('.').map(Number),y=String(b).split('.').map(Number);
+    for(var i=0;i<Math.max(x.length,y.length);i++){var d=(x[i]||0)-(y[i]||0);if(d)return d>0}
+    return false;
+  }
+  function wnClose(){
+    if(!wnOn)return;
+    wnOn=false;store.set('seenVer',APP_VER);
+    $('wn').hidden=true;$('app').inert=false;
+    var t=$('tab-playlist');
+    try{t.focus()}catch(e){}
+    status("Closed What's new.");
+  }
+  function wnInit(){
+    var seen=store.get('seenVer',null);
+    if(introOn){store.set('seenVer',APP_VER);return}
+    if(seen===null)seen='1.0.7';
+    if(!vNewer(APP_VER,seen))return;
+    var list=CHANGES.filter(function(c){return vNewer(c[0],seen)});
+    if(!list.length){store.set('seenVer',APP_VER);return}
+    $('wnTitle').textContent="What's new in version "+APP_VER;
+    var h='';
+    list.forEach(function(c){
+      if(list.length>1)h+='<h3>Version '+c[0]+'</h3>';
+      h+='<ul>'+c[1].map(function(t){return '<li>'+t.replace(/&/g,'&amp;').replace(/</g,'&lt;')+'</li>'}).join('')+'</ul>';
+    });
+    $('wnBody').innerHTML=h;
+    wnBack=document.activeElement;
+    setTimeout(function(){
+      if(introOn||wnOn)return;
+      wnOn=true;$('app').inert=true;$('wn').hidden=false;
+      $('wnClose').focus();
+    },2200);
+  }
+  $('wnClose').addEventListener('click',wnClose);
+  $('wn').addEventListener('keydown',function(e){
+    if(e.key==='Escape'){e.preventDefault();wnClose();return}
+    if(e.key==='Tab'){
+      var f=[$('wnBody'),$('wnClose')],i=f.indexOf(document.activeElement);
+      e.preventDefault();
+      i=i<0?0:(i+(e.shiftKey?-1:1)+f.length)%f.length;f[i].focus();
+    }
+  });
+
   /* ---------- init ---------- */
   setVol(S.volume,true);setXf(S.xf,true);
   $('voice').checked=S.voice;$('hotany').checked=S.hotany;
   $('hduck').checked=S.hduck;setAppMode(S.app,true);initMic();
-  renderPlTabs();renderList();renderHot();refresh();clockTick();loadHot();welcome();introInit();
+  renderPlTabs();renderList();renderHot();refresh();clockTick();loadHot();welcome();introInit();wnInit();
   setInterval(tick,100);setInterval(clockTick,1000);
 })();
 </script>
