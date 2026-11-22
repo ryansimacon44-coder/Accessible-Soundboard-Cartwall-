@@ -399,13 +399,13 @@ main{display:flex;flex-direction:column}
 <ul><li>A: Applause</li><li>C: Correct answer</li><li>D: Dog bark</li><li>F: Failure trumpet</li><li>G: Gun shot</li><li>H: Horn</li><li>L: Laugh track</li><li>R: Record scratch</li><li>S: Silence crickets</li><li>W: Wrong answer buzzer</li></ul>
 <p>You can replace any of them with your own sound. If you remove one by mistake, use "Restore built-in sound effects" in the Settings tab.</p>
 <p><strong>The Customize panel.</strong> Each sound has its own settings:</p>
-<ul><li>Volume and Speed: how loud, and how fast or slow.</li><li>Fade in and Fade out: a smooth start and end, in seconds.</li><li>Play alone: stops the music and other sounds while this one plays.</li><li>Resume afterwards: when the sound ends, the music continues from where it stopped. This needs Play alone.</li><li>Loop: repeats the sound until you stop it.</li><li>Press repeatedly: each press starts another copy on top of the others, like fast gun shots. To stop all the copies, hold Shift and press the key.</li><li>Keep full volume while I speak: the sound is not lowered when you talk into the microphone.</li><li>Effects for this sound: buttons for Effect preset, Pitch, Reverb, Echo or Delay, and Filter or EQ. They work the same way as on the Microphone tab.</li><li>Test sound, Remove this key, and Done.</li></ul>
+<ul><li>Volume and Speed: how loud, and how fast or slow.</li><li>Fade in and Fade out: a smooth start and end, in seconds.</li><li>Play alone: stops the music and other sounds while this one plays.</li><li>Resume afterwards: when the sound ends, the music continues from where it stopped. This needs Play alone.</li><li>Loop: repeats the sound until you stop it.</li><li>Press repeatedly: each press starts another copy on top of the others, like fast gun shots. To stop all the copies, hold Shift and press the key.</li><li>Keep full volume while I speak: the sound is not lowered when you talk into the microphone.</li><li>Effects for this sound: buttons for Effect preset, Pitch, Reverb, Echo or Delay, Filter or EQ, Compressor, Distortion, and Robot. They work the same way as on the Microphone tab.</li><li>Test sound, Remove this key, and Done.</li></ul>
 <p>Loop, Press repeatedly, and Keep full volume are all off by default. Everything is saved, so your sounds are still there the next time you open the app.</p>
 <h3>The Microphone Tab</h3>
 <p>This tab lets you hear your own voice through the app, change it with effects, and have the music go down automatically while you speak. Please wear headphones, or your voice will feed back and squeal.</p>
 <ul><li>Live microphone button: press Enter to turn the mic on or off. You can also press F3 from any tab.</li><li>A level meter shows your input visually.</li></ul>
 <p>Below it are section buttons. Press Enter or Space to open one, and press it again to close it. Use the Up and Down Arrow keys to move between them. Opening one closes the others.</p>
-<ul><li>Input: choose your microphone and set its volume, from 0 to 150 percent.</li><li>Voice preset: 33 presets in groups. Natural voices: Radio voice, Podcast voice, Studio vocal, Radio DJ, Clear and bright, Late night radio, Deep announcer, Warm room. Old and small speakers: Vintage radio, Telephone, Walkie-talkie, Megaphone, Behind a wall. Pitch: Slightly deeper, Slightly higher, Deep voice, High voice, Giant, Demon, Chipmunk. Special: Alien, Robot, Ghost. Rooms and echoes: Small room, Tiled bathroom, Big hall, Cathedral, Cave, Stadium, Slapback echo, Long echo, Canyon. The arrow keys only move between presets. Page Down and Page Up jump five presets at a time, and Home and End go to the first and last. Press Enter to apply one, so nothing changes by accident.</li><li>Pitch: raise or lower your voice from minus 12 to plus 12 steps without changing the speed.</li><li>Reverb: the amount and the room size.</li><li>Echo or Delay: the time, the repeats, and the amount.</li><li>Filter or EQ: bass, middle, treble, low cut, and high cut.</li><li>Lower the background while I speak: when it is on, which is the default, the music goes down as you talk and comes back about one second after you stop. You can set the volume while speaking and the voice sensitivity.</li></ul>
+<ul><li>Input: choose your microphone and set its volume, from 0 to 150 percent.</li><li>Voice preset: 26 presets. Voice: Podcast voice, Radio DJ, Clear speech, Deep announcer. Old and small speakers: Telephone, Walkie-talkie, Megaphone, Old radio, Behind a wall. Pitch: Deep voice, High voice, Giant, Chipmunk, Demon. Special: Robot, Alien, Ghost. Rooms and echoes: Small room, Tiled bathroom, Big hall, Cathedral, Stadium, Canyon, Slapback echo, Long echo. Every preset is set to about the same loudness as No effects. The arrow keys only move between presets. Page Down and Page Up jump five presets at a time, and Home and End go to the first and last. Press Enter to apply one, so nothing changes by accident.</li><li>Pitch: raise or lower your voice from minus 12 to plus 12 steps without changing the speed.</li><li>Reverb: the amount and the room size.</li><li>Echo or Delay: the time, the repeats, and the amount.</li><li>Filter or EQ: bass, middle, middle pitch, treble, low cut, high cut, and the output level of the whole effect.</li><li>Compressor: evens out loud and quiet parts, like on the radio.</li><li>Distortion: adds grit, like a small or overdriven speaker.</li><li>Robot: a robot voice.</li><li>Lower the background while I speak: when it is on, which is the default, the music goes down as you talk and comes back about one second after you stop. You can set the volume while speaking and the voice sensitivity.</li></ul>
 <p>If you hear nothing, check that Mute output is off and that Windows allows desktop apps to use the microphone.</p>
 <h3>The Settings Tab</h3>
 <ul><li>Sound: Volume, Crossfade (one track fades into the next), Mute output (this also silences the microphone), and "Lower the music while a hotkey sound plays."</li><li>Built-in sound effects: "Restore built-in sound effects" puts back any of the ten you removed. It never touches a key that has your own sound.</li><li>Announcer: the voice announcer says each track title as it starts.</li><li>Keyboard: "Hotkey sounds play anywhere," which is off by default. When it is on, you can play hotkey sounds from most places in the app, not only on the Play sounds button. Hotkey mode is also here.</li></ul>
@@ -822,6 +822,7 @@ main{display:flex;flex-direction:column}
       MASTER=AC.createDynamicsCompressor();
       MASTER.threshold.value=-3;MASTER.knee.value=0;MASTER.ratio.value=20;MASTER.attack.value=.003;MASTER.release.value=.15;
       MASTER.connect(AC.destination);
+      loadSola(AC);
     }
     if(AC.state==='suspended'){try{var r=AC.resume();if(r&&r.catch)r.catch(function(){})}catch(e){}}
     return AC;
@@ -829,15 +830,18 @@ main{display:flex;flex-direction:column}
   function fxNum(v,def,lo,hi){v=+v;return isFinite(v)?Math.max(lo,Math.min(hi,v)):def}
   function fxClean(o){
     o=(o&&typeof o==='object')?o:{};
-    var r=o.rv||{},e=o.ec||{},f=o.fl||{},p=o.pt||{};
+    var r=o.rv||{},e=o.ec||{},f=o.fl||{},p=o.pt||{},d=o.dy||{},g=o.gr||{},m=o.rm||{};
     return {
       pt:{on:!!p.on,st:fxNum(p.st,0,-12,12)},
       rv:{on:!!r.on,mix:fxNum(r.mix,30,0,100),size:fxNum(r.size,2,.5,5)},
       ec:{on:!!e.on,time:fxNum(e.time,.35,.05,1),fb:fxNum(e.fb,35,0,80),mix:fxNum(e.mix,35,0,100)},
-      fl:{on:!!f.on,bass:fxNum(f.bass,0,-12,12),mid:fxNum(f.mid,0,-12,12),treble:fxNum(f.treble,0,-12,12),low:fxNum(f.low,20,20,500),high:fxNum(f.high,20000,2000,20000)}
+      fl:{on:!!f.on,bass:fxNum(f.bass,0,-12,12),mid:fxNum(f.mid,0,-12,12),midf:fxNum(f.midf,1000,200,5000),treble:fxNum(f.treble,0,-12,12),gain:fxNum(f.gain,0,-12,12),low:fxNum(f.low,20,20,500),high:fxNum(f.high,20000,2000,20000)},
+      dy:{on:!!d.on,amt:fxNum(d.amt,50,0,100)},
+      gr:{on:!!g.on,drive:fxNum(g.drive,40,0,100)},
+      rm:{on:!!m.on,freq:fxNum(m.freq,50,20,500),mix:fxNum(m.mix,100,0,100)}
     };
   }
-  function fxActive(fx){return !!(fx&&(fx.pt.on||fx.rv.on||fx.ec.on||fx.fl.on))}
+  function fxActive(fx){return !!(fx&&(fx.pt.on||fx.rv.on||fx.ec.on||fx.fl.on||fx.dy.on||fx.gr.on||fx.rm.on))}
   function fxTail(fx){
     var t=.3;
     if(fx.pt.on)t+=.2;
@@ -883,7 +887,7 @@ main{display:flex;flex-direction:column}
     });
     pitchBufs[sr]=r;return r;
   }
-  function makePitch(ac){
+  function makePitchDelay(ac){
     var T=.05,B=pitchBuffers(ac),all=[],srcs=[],gi=[],gd=[];
     function node(x){all.push(x);return x}
     var input=node(ac.createGain()),output=node(ac.createGain()),t0=ac.currentTime+.05;
@@ -908,71 +912,168 @@ main{display:flex;flex-direction:column}
       destroy:function(){srcs.forEach(function(x){try{x.stop()}catch(e){}});all.forEach(function(x){try{x.disconnect()}catch(e){}})}
     };
   }
+  /* better pitch shift (runs in an audio worklet). The voice is read at a different speed, and every ~25 ms the read point jumps
+     to the place where the waveform lines up best with what is playing (found by correlation), then the two are cross-faded.
+     This keeps the voice smooth and clear, unlike the old fixed cross-fade which warbled. */
+  /* global sampleRate */
+  function solaWorkletMain(){
+    class SolaPitch extends AudioWorkletProcessor{
+      static get parameterDescriptors(){return [{name:'ratio',defaultValue:1,minValue:.25,maxValue:4,automationRate:'k-rate'}]}
+      constructor(){
+        super();
+        var sr=sampleRate;
+        this.N=32768;this.mask=this.N-1;
+        this.b=[new Float32Array(this.N),new Float32Array(this.N)];
+        this.L=Math.max(64,Math.round(sr*.007));
+        this.S=Math.round(sr*.0125);
+        this.J=Math.round(sr*.024);
+        this.M=this.L+24;
+        this.w=this.N;this.rp=this.w-(this.M+Math.round(this.J/2));this.ro=0;this.fc=0;this.dead=false;
+        this.A=new Float32Array(Math.ceil(this.L/2)+1);
+        var self=this;this.port.onmessage=function(){self.dead=true};
+      }
+      rd(pos,ch){
+        var i=Math.floor(pos),f=pos-i,m=this.mask,a=this.b[ch];
+        var y0=a[(i-1)&m],y1=a[i&m],y2=a[(i+1)&m],y3=a[(i+2)&m];
+        return y1+.5*f*(y2-y0+f*(2*y0-5*y1+4*y2-y3+f*(3*(y1-y2)+y3-y0)));
+      }
+      jump(dir,r){
+        var b0=this.b[0],b1=this.b[1],m=this.mask,L=this.L,S=this.S,J=this.J,A=this.A,n=0,i,c;
+        for(i=0;i<L;i+=2){var q=Math.round(this.rp+i*r);A[n++]=b0[q&m]+b1[q&m]}
+        var best=-1e30,bc=J;
+        for(c=J-S;c<=J+S;c++){
+          var sum=0,en=1e-9,k=0;
+          for(i=0;i<L;i+=2){var q2=Math.round(this.rp+i*r)+dir*c,v=b0[q2&m]+b1[q2&m];sum+=A[k++]*v;en+=v*v}
+          var sc=sum/Math.sqrt(en)*(1-.04*Math.abs(c-J)/S);
+          if(sc>best){best=sc;bc=c}
+        }
+        this.ro=this.rp;this.rp=this.rp+dir*bc;this.fc=1;
+      }
+      process(inputs,outputs,params){
+        if(this.dead)return false;
+        var inp=inputs[0],out=outputs[0];if(!out||!out.length)return true;
+        var len=out[0].length,r=params.ratio[0],m=this.mask,L=this.L,nch=out.length,ch,n;
+        for(n=0;n<len;n++){
+          for(ch=0;ch<2;ch++){var src=inp&&inp[ch]?inp[ch][n]:(inp&&inp[0]?inp[0][n]:0);this.b[ch][(this.w)&m]=src||0}
+          this.w++;
+          if(this.fc===0){
+            var d=this.w-this.rp;
+            if(r>1.0005){if(d<=this.M+(r-1)*L)this.jump(-1,r)}
+            else if(r<.9995){if(d>=this.M+this.J+this.S)this.jump(1,r)}
+          }
+          for(ch=0;ch<nch;ch++){
+            var c2=ch>1?1:ch,y;
+            if(this.fc>0){
+              var g=.5-.5*Math.cos(Math.PI*this.fc/L);
+              y=(1-g)*this.rd(this.ro,c2)+g*this.rd(this.rp,c2);
+            }else y=this.rd(this.rp,c2);
+            out[ch][n]=y;
+          }
+          if(this.fc>0){this.ro+=r;this.fc++;if(this.fc>L)this.fc=0}
+          this.rp+=r;
+        }
+        if(this.w>1e9){this.w-=268435456;this.rp-=268435456;this.ro-=268435456}
+        return true;
+      }
+    }
+    registerProcessor('sola-pitch',SolaPitch);
+  }
+  var SOLA_SRC='('+solaWorkletMain.toString()+')()';
+  function loadSola(ac){
+    try{
+      if(!ac.audioWorklet)return Promise.resolve(false);
+      /* a data: address is used because the app runs from a file, where blob: addresses are refused for worklets */
+      var u='data:application/javascript;charset=utf-8,'+encodeURIComponent(SOLA_SRC);
+      return ac.audioWorklet.addModule(u).then(function(){ac.__sola=true;return true},function(){ac.__sola=false;return false});
+    }catch(e){return Promise.resolve(false)}
+  }
+  function makeSola(ac){
+    var nd=new AudioWorkletNode(ac,'sola-pitch',{numberOfInputs:1,numberOfOutputs:1,outputChannelCount:[2],channelCount:2,channelCountMode:'explicit',channelInterpretation:'speakers'});
+    var pr=nd.parameters.get('ratio');
+    return {
+      input:nd,output:nd,
+      set:function(st){var v=Math.pow(2,st/12);try{pr.setTargetAtTime(v,ac.currentTime,.02)}catch(e){pr.value=v}},
+      destroy:function(){try{nd.port.postMessage('stop')}catch(e){}try{nd.disconnect()}catch(e){}}
+    };
+  }
+  function makePitch(ac){
+    if(ac.__sola===true){try{return makeSola(ac)}catch(e){}}
+    return makePitchDelay(ac);
+  }
+  /* signal path: pitch, robot (ring modulation), distortion, filters and EQ, compressor, then echo and reverb */
   function makeFx(ac,fx){
-    var n={},all=[];
+    var n={},all=[],osc=null;
     function node(x){all.push(x);return x}
+    function ramp(prm,v){try{prm.setTargetAtTime(v,ac.currentTime,.03)}catch(e){prm.value=v}}
+    function bq(type,q){var b=node(ac.createBiquadFilter());b.type=type;b.Q.value=q;return b}
     n.input=node(ac.createGain());n.out=node(ac.createGain());
-    var hp=node(ac.createBiquadFilter()),lp=node(ac.createBiquadFilter()),bs=node(ac.createBiquadFilter()),md=node(ac.createBiquadFilter()),tr=node(ac.createBiquadFilter());
-    hp.type='highpass';hp.Q.value=.707;lp.type='lowpass';lp.Q.value=.707;
-    bs.type='lowshelf';bs.frequency.value=200;md.type='peaking';md.frequency.value=1000;md.Q.value=.9;tr.type='highshelf';tr.frequency.value=4000;
-    var pt=makePitch(ac),pDry=node(ac.createGain()),pWet=node(ac.createGain());
-    n.input.connect(pDry);pDry.connect(hp);n.input.connect(pt.input);pt.output.connect(pWet);pWet.connect(hp);
-    hp.connect(lp);lp.connect(bs);bs.connect(md);md.connect(tr);
-    tr.connect(n.out);
+    var pt=makePitch(ac),pDry=node(ac.createGain()),pWet=node(ac.createGain()),rIn=node(ac.createGain());
+    n.input.connect(pDry);pDry.connect(rIn);n.input.connect(pt.input);pt.output.connect(pWet);pWet.connect(rIn);
+    var rDry=node(ac.createGain()),rMod=node(ac.createGain()),rWet=node(ac.createGain()),gIn=node(ac.createGain());
+    osc=ac.createOscillator();osc.type='sine';osc.frequency.value=50;rMod.gain.value=0;osc.connect(rMod.gain);osc.start();
+    rIn.connect(rDry);rDry.connect(gIn);rIn.connect(rMod);rMod.connect(rWet);rWet.connect(gIn);
+    var gDry=node(ac.createGain()),gPre=node(ac.createGain()),ws=node(ac.createWaveShaper()),gPost=node(ac.createGain()),gWet=node(ac.createGain()),hpIn=node(ac.createGain());
+    var curve=new Float32Array(2048);for(var ci=0;ci<2048;ci++){var xx=ci/1023.5-1;curve[ci]=Math.tanh(2.5*xx)/Math.tanh(2.5)}
+    ws.curve=curve;try{ws.oversample='4x'}catch(e){}
+    gIn.connect(gDry);gDry.connect(hpIn);gIn.connect(gPre);gPre.connect(ws);ws.connect(gPost);gPost.connect(gWet);gWet.connect(hpIn);
+    var hp=bq('highpass',.5412),hp2=bq('highpass',1.3066),lp=bq('lowpass',.5412),lp2=bq('lowpass',1.3066),bs=bq('lowshelf',.707),md=bq('peaking',.9),tr=bq('highshelf',.707);
+    bs.frequency.value=200;md.frequency.value=1000;tr.frequency.value=4000;
+    hpIn.connect(hp);hp.connect(hp2);hp2.connect(lp);lp.connect(lp2);lp2.connect(bs);bs.connect(md);md.connect(tr);
+    var dDry=node(ac.createGain()),dC=node(ac.createDynamicsCompressor()),dM=node(ac.createGain()),post=node(ac.createGain());
+    dC.knee.value=10;dC.attack.value=.006;dC.release.value=.18;
+    tr.connect(dDry);dDry.connect(post);tr.connect(dC);dC.connect(dM);dM.connect(post);
+    post.connect(n.out);
     var dly=node(ac.createDelay(1.1)),fb=node(ac.createGain()),ew=node(ac.createGain());
     var ef=node(ac.createBiquadFilter());ef.type='lowpass';ef.frequency.value=5200;ef.Q.value=.5;
-    tr.connect(dly);dly.connect(ef);ef.connect(fb);fb.connect(dly);dly.connect(ew);ew.connect(n.out);
+    post.connect(dly);dly.connect(ef);ef.connect(fb);fb.connect(dly);dly.connect(ew);ew.connect(n.out);
     var cv=node(ac.createConvolver()),rw=node(ac.createGain()),irSize=0;
-    tr.connect(cv);cv.connect(rw);rw.connect(n.out);
-    function ramp(prm,v){try{prm.setTargetAtTime(v,ac.currentTime,.03)}catch(e){prm.value=v}}
+    post.connect(cv);cv.connect(rw);rw.connect(n.out);
     n.set=function(f){
       f=fxClean(f);
       var shifting=f.pt.on&&f.pt.st!==0;
       ramp(pDry.gain,shifting?0:1);ramp(pWet.gain,shifting?1:0);pt.set(shifting?f.pt.st:0);
-      ramp(hp.frequency,f.fl.on?f.fl.low:10);ramp(lp.frequency,f.fl.on?f.fl.high:20000);
-      ramp(bs.gain,f.fl.on?f.fl.bass:0);ramp(md.gain,f.fl.on?f.fl.mid:0);ramp(tr.gain,f.fl.on?f.fl.treble:0);
+      var rmx=f.rm.on?f.rm.mix/100:0;ramp(rDry.gain,1-rmx);ramp(rWet.gain,rmx);ramp(osc.frequency,f.rm.freq);
+      var gon=f.gr.on?1:0,pre=1+f.gr.drive*.15;ramp(gDry.gain,1-gon);ramp(gWet.gain,gon);ramp(gPre.gain,pre);ramp(gPost.gain,Math.pow(pre,-.85));
+      ramp(hp.frequency,f.fl.on?f.fl.low:10);ramp(hp2.frequency,f.fl.on?f.fl.low:10);
+      ramp(lp.frequency,f.fl.on?f.fl.high:20000);ramp(lp2.frequency,f.fl.on?f.fl.high:20000);
+      ramp(bs.gain,f.fl.on?f.fl.bass:0);ramp(md.gain,f.fl.on?f.fl.mid:0);ramp(md.frequency,f.fl.midf);ramp(tr.gain,f.fl.on?f.fl.treble:0);
+      var a=f.dy.amt,thr=-14-a*.22,rat=1+a*.07;
+      ramp(dDry.gain,f.dy.on?0:1);ramp(dM.gain,f.dy.on?1:0);ramp(post.gain,f.fl.on?Math.pow(10,f.fl.gain/20):1);ramp(dC.threshold,f.dy.on?thr:0);ramp(dC.ratio,f.dy.on?rat:1);
       ramp(dly.delayTime,f.ec.time);ramp(fb.gain,f.ec.on?f.ec.fb/100:0);ramp(ew.gain,f.ec.on?f.ec.mix/100:0);
       if(f.rv.on&&irSize!==f.rv.size){try{cv.buffer=impulse(ac,f.rv.size);irSize=f.rv.size}catch(e){}}
       ramp(rw.gain,f.rv.on?f.rv.mix/100:0);
     };
-    n.destroy=function(){try{pt.destroy()}catch(e){}all.forEach(function(x){try{x.disconnect()}catch(e){}})};
+    n.destroy=function(){try{pt.destroy()}catch(e){}try{osc.stop()}catch(e){}all.forEach(function(x){try{x.disconnect()}catch(e){}});try{osc.disconnect()}catch(e){}};
     n.set(fx);
     return n;
   }
   var PRESETS=[
     ['No effects',{}],
-    ['Radio voice',{fl:{on:true,bass:-4,mid:8,treble:2,low:300,high:4500}}],
-    ['Telephone',{fl:{on:true,bass:-8,mid:10,treble:-2,low:450,high:3000}}],
-    ['Deep announcer',{fl:{on:true,bass:9,mid:0,treble:-2,low:20,high:12000},rv:{on:true,mix:12,size:.8}}],
-    ['Deep voice',{pt:{on:true,st:-4}}],
-    ['High voice',{pt:{on:true,st:5}}],
-    ['Warm room',{rv:{on:true,mix:25,size:1.2},fl:{on:true,bass:2,mid:0,treble:-1,low:20,high:20000}}],
-    ['Big hall',{rv:{on:true,mix:45,size:3.5}}],
-    ['Slapback echo',{ec:{on:true,time:.12,fb:20,mix:40}}],
-    ['Long echo',{ec:{on:true,time:.5,fb:45,mix:45},rv:{on:true,mix:15,size:1.5}}],
-    ['Podcast voice',{fl:{on:true,bass:3,mid:2,treble:3,low:80,high:16000}}],
-    ['Studio vocal',{fl:{on:true,bass:2,mid:1,treble:3,low:80,high:18000},rv:{on:true,mix:15,size:1.5}}],
-    ['Radio DJ',{fl:{on:true,bass:5,mid:2,treble:4,low:70,high:15000},rv:{on:true,mix:5,size:.5}}],
-    ['Clear and bright',{fl:{on:true,bass:-2,mid:3,treble:6,low:100,high:20000}}],
-    ['Late night radio',{fl:{on:true,bass:6,mid:0,treble:-3,low:60,high:9000},rv:{on:true,mix:10,size:.5}}],
-    ['Vintage radio',{fl:{on:true,bass:-6,mid:9,treble:-8,low:250,high:4000},rv:{on:true,mix:10,size:.5}}],
-    ['Walkie-talkie',{fl:{on:true,bass:-12,mid:10,treble:-6,low:500,high:2500}}],
-    ['Megaphone',{fl:{on:true,bass:-10,mid:12,treble:4,low:400,high:4000},rv:{on:true,mix:15,size:1}}],
-    ['Behind a wall',{fl:{on:true,bass:6,mid:-4,treble:-12,low:20,high:2000}}],
-    ['Slightly deeper',{pt:{on:true,st:-2}}],
-    ['Slightly higher',{pt:{on:true,st:2}}],
-    ['Giant',{pt:{on:true,st:-9},fl:{on:true,bass:6,mid:0,treble:-3,low:20,high:12000},rv:{on:true,mix:20,size:1.5}}],
-    ['Demon',{pt:{on:true,st:-10},ec:{on:true,time:.1,fb:30,mix:30},fl:{on:true,bass:6,mid:0,treble:-4,low:20,high:12000}}],
-    ['Chipmunk',{pt:{on:true,st:9},fl:{on:true,bass:-4,mid:2,treble:2,low:100,high:20000}}],
-    ['Alien',{pt:{on:true,st:7},ec:{on:true,time:.05,fb:55,mix:40}}],
-    ['Robot',{ec:{on:true,time:.05,fb:55,mix:40},fl:{on:true,bass:-2,mid:4,treble:0,low:150,high:6000}}],
-    ['Ghost',{rv:{on:true,mix:55,size:4},ec:{on:true,time:.4,fb:40,mix:35},fl:{on:true,bass:-4,mid:0,treble:4,low:150,high:8000}}],
-    ['Small room',{rv:{on:true,mix:20,size:.5}}],
-    ['Tiled bathroom',{rv:{on:true,mix:35,size:1},fl:{on:true,bass:-2,mid:0,treble:3,low:20,high:20000}}],
-    ['Stadium',{ec:{on:true,time:.3,fb:25,mix:30},rv:{on:true,mix:35,size:2.5}}],
-    ['Cave',{rv:{on:true,mix:50,size:3},ec:{on:true,time:.25,fb:30,mix:25}}],
-    ['Cathedral',{rv:{on:true,mix:55,size:5},fl:{on:true,bass:0,mid:0,treble:0,low:80,high:20000}}],
-    ['Canyon',{ec:{on:true,time:1,fb:30,mix:45}}]
+    ['Podcast voice',{fl:{on:true,bass:3,mid:3,midf:2500,treble:2,low:80,high:16000,gain:-5},dy:{on:true,amt:40}}],
+    ['Radio DJ',{fl:{on:true,bass:4,mid:5,midf:3500,treble:6,low:90,high:15000,gain:-3},dy:{on:true,amt:85}}],
+    ['Clear speech',{fl:{on:true,bass:-4,mid:5,midf:3000,treble:3,low:150,high:20000,gain:-4},dy:{on:true,amt:30}}],
+    ['Deep announcer',{fl:{on:true,bass:9,mid:-1,midf:400,treble:-2,low:20,high:12000,gain:-5},dy:{on:true,amt:60},rv:{on:true,mix:10,size:1}}],
+    ['Telephone',{fl:{on:true,bass:-12,mid:6,midf:1500,treble:-2,low:300,high:3500,gain:-8},gr:{on:true,drive:15},dy:{on:true,amt:30}}],
+    ['Walkie-talkie',{fl:{on:true,bass:-12,mid:8,midf:1800,treble:-6,low:400,high:2500,gain:-5},gr:{on:true,drive:50},dy:{on:true,amt:85}}],
+    ['Megaphone',{fl:{on:true,bass:-12,mid:10,midf:1500,treble:2,low:500,high:4000,gain:-5},gr:{on:true,drive:65},dy:{on:true,amt:60},rv:{on:true,mix:15,size:1}}],
+    ['Old radio',{fl:{on:true,bass:-4,mid:5,midf:1200,treble:-6,low:200,high:4500,gain:-7},gr:{on:true,drive:25},rv:{on:true,mix:10,size:.5}}],
+    ['Behind a wall',{fl:{on:true,bass:6,mid:-6,midf:800,treble:-12,low:20,high:2000,gain:2},rv:{on:true,mix:20,size:.5}}],
+    ['Deep voice',{pt:{on:true,st:-3},fl:{on:true,bass:2,mid:0,midf:1000,treble:0,low:20,high:20000}}],
+    ['High voice',{pt:{on:true,st:4},fl:{on:true,bass:-2,mid:0,midf:1000,treble:2,low:100,high:20000}}],
+    ['Giant',{pt:{on:true,st:-8},fl:{on:true,bass:6,mid:0,midf:1000,treble:-3,low:20,high:12000,gain:-2},rv:{on:true,mix:20,size:1.5}}],
+    ['Chipmunk',{pt:{on:true,st:9},fl:{on:true,bass:-4,mid:2,midf:2000,treble:3,low:150,high:20000,gain:-1}}],
+    ['Demon',{pt:{on:true,st:-10},gr:{on:true,drive:35},ec:{on:true,time:.1,fb:30,mix:30},fl:{on:true,bass:6,mid:0,midf:1000,treble:-4,low:20,high:12000,gain:-6}}],
+    ['Robot',{rm:{on:true,freq:50,mix:100},fl:{on:true,bass:-2,mid:4,midf:1500,treble:0,low:150,high:6000,gain:1}}],
+    ['Alien',{pt:{on:true,st:5},rm:{on:true,freq:200,mix:50},ec:{on:true,time:.05,fb:40,mix:30},fl:{on:true,bass:0,mid:0,midf:1000,treble:0,low:20,high:20000,gain:4}}],
+    ['Ghost',{rv:{on:true,mix:55,size:4},ec:{on:true,time:.4,fb:40,mix:35},fl:{on:true,bass:-4,mid:0,midf:1000,treble:4,low:150,high:8000,gain:-3}}],
+    ['Small room',{rv:{on:true,mix:55,size:.5},fl:{on:true,bass:0,mid:0,midf:1000,treble:0,low:20,high:20000}}],
+    ['Tiled bathroom',{rv:{on:true,mix:40,size:1.5},fl:{on:true,bass:-4,mid:0,midf:1000,treble:5,low:150,high:20000}}],
+    ['Big hall',{rv:{on:true,mix:45,size:3.5},fl:{on:true,bass:0,mid:0,midf:1000,treble:0,low:20,high:20000}}],
+    ['Cathedral',{rv:{on:true,mix:55,size:5},fl:{on:true,bass:0,mid:0,midf:1000,treble:-3,low:80,high:20000,gain:-1}}],
+    ['Stadium',{ec:{on:true,time:.3,fb:25,mix:30},rv:{on:true,mix:35,size:2.5},fl:{on:true,bass:0,mid:0,midf:1000,treble:0,low:20,high:20000,gain:-2}}],
+    ['Canyon',{ec:{on:true,time:1,fb:30,mix:45},fl:{on:true,bass:0,mid:0,midf:1000,treble:0,low:20,high:20000,gain:-3}}],
+    ['Slapback echo',{ec:{on:true,time:.1,fb:20,mix:40},fl:{on:true,bass:0,mid:0,midf:1000,treble:0,low:20,high:20000,gain:-3}}],
+    ['Long echo',{ec:{on:true,time:.5,fb:45,mix:45},rv:{on:true,mix:15,size:1.5},fl:{on:true,bass:0,mid:0,midf:1000,treble:0,low:20,high:20000,gain:-3}}]
   ];
   function fxSame(a,b){return JSON.stringify(fxClean(a))===JSON.stringify(fxClean(b))}
   var FXG=[
@@ -980,8 +1081,11 @@ main{display:flex;flex-direction:column}
     {k:'rv',title:'Reverb',on:'Turn on reverb',f:[['mix','Reverb amount',0,100,5,function(v){return v+' percent'}],['size','Room size',.5,5,.5,function(v){return v+(v===1?' second':' seconds')}]]},
     {k:'ec',title:'Echo / Delay',on:'Turn on echo',f:[['time','Echo time',.05,1,.05,function(v){return v.toFixed(2)+' seconds'}],['fb','Echo repeats',0,80,5,function(v){return v+' percent'}],['mix','Echo amount',0,100,5,function(v){return v+' percent'}]]},
     {k:'fl',title:'Filter / EQ',on:'Turn on filter and EQ',f:[
-      ['bass','Bass',-12,12,1,function(v){return v+' decibels'}],['mid','Middle',-12,12,1,function(v){return v+' decibels'}],['treble','Treble',-12,12,1,function(v){return v+' decibels'}],
-      ['low','Low cut: removes rumble',20,500,10,function(v){return v<=20?'Off':v+' hertz'}],['high','High cut: removes hiss',2000,20000,500,function(v){return v>=20000?'Off':v+' hertz'}]]}
+      ['bass','Bass',-12,12,1,function(v){return v+' decibels'}],['mid','Middle',-12,12,1,function(v){return v+' decibels'}],['midf','Middle pitch: the center of the Middle control',200,5000,100,function(v){return v+' hertz'}],['treble','Treble',-12,12,1,function(v){return v+' decibels'}],
+      ['low','Low cut: removes rumble',20,500,10,function(v){return v<=20?'Off':v+' hertz'}],['high','High cut: removes hiss',2000,20000,500,function(v){return v>=20000?'Off':v+' hertz'}],['gain','Output level: makes the whole voice louder or quieter',-12,12,1,function(v){return v+' decibels'}]]},
+    {k:'dy',title:'Compressor',on:'Turn on compressor. It evens out loud and quiet parts, like on the radio.',f:[['amt','Compressor strength',0,100,5,function(v){return v+' percent'}]]},
+    {k:'gr',title:'Distortion',on:'Turn on distortion. It adds grit, like a small or overdriven speaker.',f:[['drive','Distortion amount',0,100,5,function(v){return v+' percent'}]]},
+    {k:'rm',title:'Robot',on:'Turn on robot voice (ring modulation)',f:[['freq','Robot tone',20,500,10,function(v){return v+' hertz'}],['mix','Robot amount',0,100,5,function(v){return v+' percent'}]]}
   ];
 
   /* section buttons: a section opens only when its button is pressed, and opening one closes the others */
@@ -1748,8 +1852,9 @@ main{display:flex;flex-direction:column}
   }
 
   /* ---------- what's new, shown once after each update ---------- */
-  var APP_VER='1.3.2',wnOn=false;
+  var APP_VER='1.3.3',wnOn=false;
   var CHANGES=[
+    ['1.3.3',['The pitch control now sounds much cleaner and more natural, with a better pitch shifter.','The voice presets were reworked. Presets that sounded alike were removed or changed, so each one now sounds clearly different. There are 26 presets, all about the same loudness.','New effects in the Microphone and hotkey sound settings: Compressor, Distortion, and Robot. The Filter or EQ section also has Middle pitch and Output level.','Reverb and echo, and the low cut and high cut filters, sound smoother and more natural.']],
     ['1.3.2',['23 new voice presets: Podcast voice, Studio vocal, Radio DJ, Clear and bright, Late night radio, Vintage radio, Walkie-talkie, Megaphone, Behind a wall, Slightly deeper, Slightly higher, Giant, Demon, Chipmunk, Alien, Robot, Ghost, Small room, Tiled bathroom, Stadium, Cave, Cathedral, and Canyon. They also work in each hotkey sound\'s effects.','Reverb now sounds smoother and more natural, and echoes fade darker, like in a real room.','In the preset list, Page Down and Page Up jump five presets at a time.']],
     ['1.3.1',['The app now starts faster and works fully offline.','Fixed a rare case where a sound\'s saved settings could reset after the first launch.']],
     ['1.3.0',['If a new installer is ever needed, the app now downloads it by itself and asks if you want to install it. Your sounds and settings are kept.']],
