@@ -405,7 +405,7 @@ main{display:flex;flex-direction:column}
 <p>This tab lets you hear your own voice through the app, change it with effects, and have the music go down automatically while you speak. Please wear headphones, or your voice will feed back and squeal.</p>
 <ul><li>Live microphone button: press Enter to turn the mic on or off. You can also press F3 from any tab.</li><li>A level meter shows your input visually.</li></ul>
 <p>Below it are section buttons. Press Enter or Space to open one, and press it again to close it. Use the Up and Down Arrow keys to move between them. Opening one closes the others.</p>
-<ul><li>Input: choose your microphone and set its volume, from 0 to 150 percent.</li><li>Voice preset: Radio voice, Telephone, Deep announcer, Deep voice, High voice, Warm room, Big hall, Slapback echo, and Long echo. The arrow keys only move between presets. Press Enter to apply one, so nothing changes by accident.</li><li>Pitch: raise or lower your voice from minus 12 to plus 12 steps without changing the speed.</li><li>Reverb: the amount and the room size.</li><li>Echo or Delay: the time, the repeats, and the amount.</li><li>Filter or EQ: bass, middle, treble, low cut, and high cut.</li><li>Lower the background while I speak: when it is on, which is the default, the music goes down as you talk and comes back about one second after you stop. You can set the volume while speaking and the voice sensitivity.</li></ul>
+<ul><li>Input: choose your microphone and set its volume, from 0 to 150 percent.</li><li>Voice preset: 33 presets in groups. Natural voices: Radio voice, Podcast voice, Studio vocal, Radio DJ, Clear and bright, Late night radio, Deep announcer, Warm room. Old and small speakers: Vintage radio, Telephone, Walkie-talkie, Megaphone, Behind a wall. Pitch: Slightly deeper, Slightly higher, Deep voice, High voice, Giant, Demon, Chipmunk. Special: Alien, Robot, Ghost. Rooms and echoes: Small room, Tiled bathroom, Big hall, Cathedral, Cave, Stadium, Slapback echo, Long echo, Canyon. The arrow keys only move between presets. Page Down and Page Up jump five presets at a time, and Home and End go to the first and last. Press Enter to apply one, so nothing changes by accident.</li><li>Pitch: raise or lower your voice from minus 12 to plus 12 steps without changing the speed.</li><li>Reverb: the amount and the room size.</li><li>Echo or Delay: the time, the repeats, and the amount.</li><li>Filter or EQ: bass, middle, treble, low cut, and high cut.</li><li>Lower the background while I speak: when it is on, which is the default, the music goes down as you talk and comes back about one second after you stop. You can set the volume while speaking and the voice sensitivity.</li></ul>
 <p>If you hear nothing, check that Mute output is off and that Windows allows desktop apps to use the microphone.</p>
 <h3>The Settings Tab</h3>
 <ul><li>Sound: Volume, Crossfade (one track fades into the next), Mute output (this also silences the microphone), and "Lower the music while a hotkey sound plays."</li><li>Built-in sound effects: "Restore built-in sound effects" puts back any of the ten you removed. It never touches a key that has your own sound.</li><li>Announcer: the voice announcer says each track title as it starts.</li><li>Keyboard: "Hotkey sounds play anywhere," which is off by default. When it is on, you can play hotkey sounds from most places in the app, not only on the Play sounds button. Hotkey mode is also here.</li></ul>
@@ -845,10 +845,29 @@ main{display:flex;flex-direction:column}
     if(fx.ec.on){var f=fx.ec.fb/100;t+=Math.min(8,fx.ec.time*(f>0?Math.ceil(Math.log(.01)/Math.log(f)):1))}
     return Math.min(12,t)*1000;
   }
+  /* room reverb impulse: a short pre-delay, a few early reflections, then a smooth tail that gets darker as it fades (like a real room).
+     Each ear gets its own noise, so the room sounds wide. The tail is 60 dB down after "sec" seconds. */
   function impulse(ac,sec){
     var key=sec.toFixed(1);if(irCache[key])return irCache[key];
-    var n=Math.max(1,Math.floor(ac.sampleRate*sec)),b=ac.createBuffer(2,n,ac.sampleRate);
-    for(var c=0;c<2;c++){var d=b.getChannelData(c);for(var i=0;i<n;i++)d[i]=(Math.random()*2-1)*Math.pow(1-i/n,2.5)}
+    var sr=ac.sampleRate,n=Math.max(2,Math.floor(sr*sec)),b=ac.createBuffer(2,n,sr);
+    var pre=Math.floor(sr*Math.min(.03,.006+.006*sec));
+    var taps=[[.011,.9],[.017,.7],[.023,.6],[.031,.5],[.043,.4],[.059,.3],[.077,.22]];
+    for(var c=0;c<2;c++){
+      var d=b.getChannelData(c),lp=0,seed=(c+1)*9301+Math.round(sec*10)*49297;
+      for(var i=pre;i<n;i++){
+        seed=(seed*1664525+1013904223)>>>0;
+        var x=seed/2147483648-1,t=(i-pre)/sr,u=t/sec;
+        var a=.55*Math.exp(-3.2*u)+.04;
+        lp+=a*(x-lp);
+        var env=Math.pow(10,-3*u);
+        var fade=u>.9?(1-u)/.1:1;
+        d[i]=lp*env*fade*1.6;
+      }
+      for(var k=0;k<taps.length;k++){
+        var pos=pre+Math.floor(sr*taps[k][0]*(1+.12*c)*(.6+.4*Math.min(sec,3)));
+        if(pos<n)d[pos]+=taps[k][1]*(k%2?-1:1)*.9;
+      }
+    }
     irCache[key]=b;return b;
   }
   /* pitch shift without changing speed: two delay lines whose delay time slides along a ramp, cross-faded so the jump is never heard */
@@ -901,7 +920,8 @@ main{display:flex;flex-direction:column}
     hp.connect(lp);lp.connect(bs);bs.connect(md);md.connect(tr);
     tr.connect(n.out);
     var dly=node(ac.createDelay(1.1)),fb=node(ac.createGain()),ew=node(ac.createGain());
-    tr.connect(dly);dly.connect(fb);fb.connect(dly);dly.connect(ew);ew.connect(n.out);
+    var ef=node(ac.createBiquadFilter());ef.type='lowpass';ef.frequency.value=5200;ef.Q.value=.5;
+    tr.connect(dly);dly.connect(ef);ef.connect(fb);fb.connect(dly);dly.connect(ew);ew.connect(n.out);
     var cv=node(ac.createConvolver()),rw=node(ac.createGain()),irSize=0;
     tr.connect(cv);cv.connect(rw);rw.connect(n.out);
     function ramp(prm,v){try{prm.setTargetAtTime(v,ac.currentTime,.03)}catch(e){prm.value=v}}
@@ -929,7 +949,30 @@ main{display:flex;flex-direction:column}
     ['Warm room',{rv:{on:true,mix:25,size:1.2},fl:{on:true,bass:2,mid:0,treble:-1,low:20,high:20000}}],
     ['Big hall',{rv:{on:true,mix:45,size:3.5}}],
     ['Slapback echo',{ec:{on:true,time:.12,fb:20,mix:40}}],
-    ['Long echo',{ec:{on:true,time:.5,fb:45,mix:45},rv:{on:true,mix:15,size:1.5}}]
+    ['Long echo',{ec:{on:true,time:.5,fb:45,mix:45},rv:{on:true,mix:15,size:1.5}}],
+    ['Podcast voice',{fl:{on:true,bass:3,mid:2,treble:3,low:80,high:16000}}],
+    ['Studio vocal',{fl:{on:true,bass:2,mid:1,treble:3,low:80,high:18000},rv:{on:true,mix:15,size:1.5}}],
+    ['Radio DJ',{fl:{on:true,bass:5,mid:2,treble:4,low:70,high:15000},rv:{on:true,mix:5,size:.5}}],
+    ['Clear and bright',{fl:{on:true,bass:-2,mid:3,treble:6,low:100,high:20000}}],
+    ['Late night radio',{fl:{on:true,bass:6,mid:0,treble:-3,low:60,high:9000},rv:{on:true,mix:10,size:.5}}],
+    ['Vintage radio',{fl:{on:true,bass:-6,mid:9,treble:-8,low:250,high:4000},rv:{on:true,mix:10,size:.5}}],
+    ['Walkie-talkie',{fl:{on:true,bass:-12,mid:10,treble:-6,low:500,high:2500}}],
+    ['Megaphone',{fl:{on:true,bass:-10,mid:12,treble:4,low:400,high:4000},rv:{on:true,mix:15,size:1}}],
+    ['Behind a wall',{fl:{on:true,bass:6,mid:-4,treble:-12,low:20,high:2000}}],
+    ['Slightly deeper',{pt:{on:true,st:-2}}],
+    ['Slightly higher',{pt:{on:true,st:2}}],
+    ['Giant',{pt:{on:true,st:-9},fl:{on:true,bass:6,mid:0,treble:-3,low:20,high:12000},rv:{on:true,mix:20,size:1.5}}],
+    ['Demon',{pt:{on:true,st:-10},ec:{on:true,time:.1,fb:30,mix:30},fl:{on:true,bass:6,mid:0,treble:-4,low:20,high:12000}}],
+    ['Chipmunk',{pt:{on:true,st:9},fl:{on:true,bass:-4,mid:2,treble:2,low:100,high:20000}}],
+    ['Alien',{pt:{on:true,st:7},ec:{on:true,time:.05,fb:55,mix:40}}],
+    ['Robot',{ec:{on:true,time:.05,fb:55,mix:40},fl:{on:true,bass:-2,mid:4,treble:0,low:150,high:6000}}],
+    ['Ghost',{rv:{on:true,mix:55,size:4},ec:{on:true,time:.4,fb:40,mix:35},fl:{on:true,bass:-4,mid:0,treble:4,low:150,high:8000}}],
+    ['Small room',{rv:{on:true,mix:20,size:.5}}],
+    ['Tiled bathroom',{rv:{on:true,mix:35,size:1},fl:{on:true,bass:-2,mid:0,treble:3,low:20,high:20000}}],
+    ['Stadium',{ec:{on:true,time:.3,fb:25,mix:30},rv:{on:true,mix:35,size:2.5}}],
+    ['Cave',{rv:{on:true,mix:50,size:3},ec:{on:true,time:.25,fb:30,mix:25}}],
+    ['Cathedral',{rv:{on:true,mix:55,size:5},fl:{on:true,bass:0,mid:0,treble:0,low:80,high:20000}}],
+    ['Canyon',{ec:{on:true,time:1,fb:30,mix:45}}]
   ];
   function fxSame(a,b){return JSON.stringify(fxClean(a))===JSON.stringify(fxClean(b))}
   var FXG=[
@@ -996,9 +1039,10 @@ main{display:flex;flex-direction:column}
       else if(e.code==='ControlLeft'){if(e.repeat)return;d=-1}
       else if(!e.ctrlKey){
         if(k==='ArrowDown'||k==='ArrowRight')d=1;else if(k==='ArrowUp'||k==='ArrowLeft')d=-1;
+        else if(k==='PageDown'){d=Math.min(5,pb.length-1-i)}else if(k==='PageUp'){d=-Math.min(5,i)}
         else if(k==='Home'){i=-1;d=1}else if(k==='End'){i=pb.length;d=-1}
       }
-      if(d){e.preventDefault();pb[(i+d+pb.length)%pb.length].focus()}
+      if(d){e.preventDefault();pb[(i+d+pb.length)%pb.length].focus()}else if(k==='PageDown'||k==='PageUp')e.preventDefault();
     });
     ps.p.appendChild(pg);
     FXG.forEach(function(g){
@@ -1704,8 +1748,9 @@ main{display:flex;flex-direction:column}
   }
 
   /* ---------- what's new, shown once after each update ---------- */
-  var APP_VER='1.3.1',wnOn=false;
+  var APP_VER='1.3.2',wnOn=false;
   var CHANGES=[
+    ['1.3.2',['23 new voice presets: Podcast voice, Studio vocal, Radio DJ, Clear and bright, Late night radio, Vintage radio, Walkie-talkie, Megaphone, Behind a wall, Slightly deeper, Slightly higher, Giant, Demon, Chipmunk, Alien, Robot, Ghost, Small room, Tiled bathroom, Stadium, Cave, Cathedral, and Canyon. They also work in each hotkey sound\'s effects.','Reverb now sounds smoother and more natural, and echoes fade darker, like in a real room.','In the preset list, Page Down and Page Up jump five presets at a time.']],
     ['1.3.1',['The app now starts faster and works fully offline.','Fixed a rare case where a sound\'s saved settings could reset after the first launch.']],
     ['1.3.0',['If a new installer is ever needed, the app now downloads it by itself and asks if you want to install it. Your sounds and settings are kept.']],
     ['1.2.0',['A What\'s new window now appears after each update. Press Close when you have read it.','New users now get one Setup program that installs everything with a single double-click.']],
